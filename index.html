@@ -74,7 +74,48 @@ main{max-width:760px!important;box-shadow:0 0 0 1px #316d5a,0 16px 70px #000b!im
 .bubble{border-radius:6px!important;line-height:1.52!important}.bubble.them{border-left:3px solid #94fac2!important}.bubble.me{border-right:3px solid #a9aeff!important}
 .entry input{font-family:Tahoma,Verdana,sans-serif!important}.emoji-picker button{background:linear-gradient(#443257,#261f3a)!important;border-radius:6px!important}
 @media(max-width:540px){.top{padding:12px!important}.brand{font-size:19px!important}.network-label{display:none}.buddy-card-main{padding:11px 10px;gap:9px}.buddy-title{font-size:15px}.buddy-extra{font-size:10px}.buddy-open{min-width:46px;padding:10px 6px}.im-window-controls{font-size:10px}.chat{min-height:37vh!important}}
-</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Password is kept in this page only; re-enter it after refreshing.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.65;font-size:11px">/ AIM // 0.2</span></div><div class="pill">● PRIVATE LINK</div></div><div class="buddy-list-header"><span>◈ Buddy List <small>1 contact</small></span><span class="network-label">PARALLEL.NET / PRIVATE</span></div>
+
+/* Parallel OS 1.0 — actual multi-screen AIM cyber desktop */
+body{background:#020b0d!important;background-image:radial-gradient(ellipse at 50% 0,#0b45386b,transparent 58%),repeating-linear-gradient(90deg,#01ff9907 0 1px,transparent 1px 34px)!important}
+main{max-width:560px!important;min-height:100dvh!important;border:1px solid #49aa87!important;display:block!important;position:relative;background:linear-gradient(150deg,#07141a,#03100e 80%)!important;box-shadow:0 0 90px #0eff9630,0 0 0 5px #061910!important;padding-bottom:82px!important}
+.top{border-bottom:1px solid #91f5cb!important;padding:19px!important;background:linear-gradient(180deg,#305e55,#0b332e)!important}
+.brand{font:800 25px Tahoma,sans-serif!important;letter-spacing:.05em!important}.pill{font-size:9px!important}
+.os-head{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:#031510;border-bottom:1px solid #2d7159;color:#8dfdc0;font:700 11px Tahoma,sans-serif;letter-spacing:.08em}
+.os-screen{padding:15px 14px 22px;animation:osAppear .25s ease-out}
+@keyframes osAppear{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
+.os-window{border:1px solid #7fcba8;background:#071922;box-shadow:0 12px 38px #0009,2px 2px 0 #06291d;border-radius:5px;overflow:hidden}
+.os-titlebar{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:linear-gradient(#50a184,#15513d 52%,#073024);border-bottom:1px solid #8ce9bb;color:white;font:700 12px Tahoma,sans-serif;text-shadow:0 1px #133b2c}
+.os-winctrl{color:#ddfff1;letter-spacing:.23em;font-size:11px}
+.os-desktop{min-height:46vh;padding:17px;background:radial-gradient(circle at 85% 15%,#19725735,transparent 42%),repeating-linear-gradient(0deg,transparent 0 22px,#13e99a08 23px),#04121a}
+.os-welcome{font:700 25px Tahoma,sans-serif;color:#dffff3;line-height:1.2;text-shadow:0 0 15px #0cbf7970}
+.os-welcome-sub{font:12px/1.7 monospace;color:#78ccaa;margin:9px 0 18px}
+.os-contact-title{margin:18px 0 0;color:#99ebc3;font:700 11px Tahoma,sans-serif;letter-spacing:.1em}
+.os-home .buddy-list-header{margin:8px 0 0!important}.os-home .buddy-card-main{margin:0!important;cursor:pointer;transition:filter .15s}.os-home .buddy-card-main:hover{filter:brightness(1.19)}
+.os-home .buddy-card-main:focus-within{outline:2px solid #92f9c7}
+.os-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.os-tile{min-height:94px;padding:15px 10px;border:1px solid #3e9773;background:linear-gradient(160deg,#183e37,#071b22);border-radius:5px;text-align:left;color:#e8fff5;font:700 13px Tahoma,sans-serif;cursor:pointer}
+.os-tile span{display:block;font-size:24px;margin-bottom:8px}.os-tile small{display:block;color:#8ebfad;font-weight:400;margin-top:5px}
+.os-bottom{position:sticky;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);height:64px;background:linear-gradient(#10362e,#071713);border-top:1px solid #6ebd97;box-shadow:0 -7px 30px #0008}
+.os-bottom button{border:0;border-right:1px solid #2c7053;background:transparent;color:#8fbca9;font:700 10px Tahoma,sans-serif;cursor:pointer}
+.os-bottom button span{display:block;font-size:22px;margin-bottom:3px}
+.os-bottom button.active{background:linear-gradient(#2d8060,#104934);color:#f6fffa}
+.os-back{border:1px solid #60ab89;background:#173d32;color:#defbea;border-radius:5px;padding:7px 11px;font:700 12px Tahoma,sans-serif;cursor:pointer}
+.os-chat #messages,.os-world #world,.os-visit #visit{display:flex!important;margin:0!important;min-height:0!important}
+.os-chat #messages{height:calc(100dvh - 225px);max-height:800px;flex-direction:column}
+.os-chat .chat{min-height:160px!important;max-height:none!important;flex:1!important}
+.os-chat .im-titlebar{display:none}
+.os-chat .entry{padding:10px!important}
+.os-chat .note{font-size:10px!important;padding:6px 11px!important;margin:0}
+.os-world #world,.os-visit #visit{border:0;background:transparent!important}
+.os-world .world,.os-visit .world{margin:0!important;width:100%}
+.os-settings .soundbar,.os-settings .devbar,.os-settings .chat-tools{margin:14px 0!important}
+.os-settings .soundbar{padding:0!important}
+.os-settings h3{color:#bcffe1;font:700 14px Tahoma,sans-serif}
+.os-privacy{color:#8fc6b0;font:12px/1.6 monospace;margin-top:16px}
+.os-offline-tag{display:inline-block;padding:4px 7px;border:1px solid #579275;border-radius:3px;color:#9edabb;font:10px monospace}
+main>.buddy-list-header,main>.buddy-card-main,main>.soundbar,main>.devbar,main>.chat-tools,main>.tabs,main>.screen{display:none!important}
+@media(max-width:560px){main{border:0!important;box-shadow:none!important}.os-screen{padding:10px}.os-desktop{min-height:45vh;padding:14px}.os-welcome{font-size:22px}.os-chat #messages{height:calc(100dvh - 206px)}.os-home .buddy-extra{font-size:10px}}
+</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Password is kept in this page only; re-enter it after refreshing.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.65;font-size:11px">/ OS // 1.0</span></div><div class="pill">● PRIVATE LINK</div></div><div class="buddy-list-header"><span>◈ Buddy List <small>1 contact</small></span><span class="network-label">PARALLEL.NET / PRIVATE</span></div>
 <div class="buddy-card-main" role="group" aria-label="Your contact Dr. Gurathin">
   <div class="buddy-icon">☕</div>
   <div class="buddy-details"><div class="buddy-title"><span class="buddy-light" id="buddyLight"></span><strong>Dr. Gurathin</strong><span class="buddy-tag">01</span></div>
@@ -254,5 +295,57 @@ function deliver(){
 $('form').addEventListener('submit',e=>{e.preventDefault();const val=$('input').value.trim();if(!val)return;messages.push({from:'me',text:val,at:Date.now()});retroSound.play('sent');$('input').value='';render();queueReply()});document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b===btn));['messages','world','visit'].forEach(id=>$(id).classList.toggle('hidden',id!==btn.dataset.tab));if(btn.dataset.tab==='messages')render()}));$('kitloc').value=localStorage.getItem('parallel-kitloc')||'University';$('kitloc').addEventListener('change',e=>localStorage.setItem('parallel-kitloc',e.target.value));$('visitBtn').addEventListener('click',()=>{$('scene').textContent='He opens the door, looking over his glasses. “You could have told me you were coming.” He steps aside to let you in.';$('visitBtn').textContent='Scene started'});render();update();setInterval(update,60000);
 // Resume pending delay after tab refresh if it has not elapsed; no background execution.
 const p=Number(localStorage.getItem('parallel-pending'));if(p&&messages.at(-1)?.from==='me'){const remaining=Math.max(1000,p-Date.now());if(update().available||devMode.checked){$('status').textContent='Delivered · Reply pending';replyTimer=setTimeout(deliver,remaining)}}
+
+function installParallelOS(){
+ const main=document.querySelector('main');
+ const oldHeader=main.querySelector('.top');
+ const buddyHeader=main.querySelector('.buddy-list-header');
+ const buddy=main.querySelector('.buddy-card-main');
+ const sound=main.querySelector('.soundbar');
+ const dev=main.querySelector('.devbar');
+ const tools=main.querySelector('.chat-tools');
+ const tabs=main.querySelector('.tabs');
+ const msgs=$('messages'),world=$('world'),visit=$('visit');
+ const nav=document.createElement('nav');nav.className='os-bottom';nav.setAttribute('aria-label','Parallel navigation');
+ nav.innerHTML='<button type="button" data-view="home"><span>▦</span>Buddies</button><button type="button" data-view="chat"><span>▤</span>Messages</button><button type="button" data-view="world"><span>◎</span>World</button><button type="button" data-view="settings"><span>⚙</span>Settings</button>';
+ const head=document.createElement('div');head.className='os-head';head.innerHTML='<span>◉ SYSTEM ONLINE</span><span>PARALLEL OS / V1.0</span>';
+ const screen=document.createElement('div');screen.className='os-screen';
+ const home=document.createElement('section');home.className='os-home';
+ home.innerHTML='<div class="os-window"><div class="os-titlebar"><span>✦ parallel.exe — buddy list</span><span class="os-winctrl">─ ▣ ✕</span></div><div class="os-desktop"><div class="os-welcome">Welcome back,<br>Kit_</div><div class="os-welcome-sub">> CONNECTION ESTABLISHED<br>> ONE CONTACT DETECTED<br>> CALIFORNIA NODE ACTIVE</div><div class="os-contact-title">▾ MY BUDDIES [1]</div><div id="osBuddySlot"></div><div class="os-quick"><button type="button" class="os-tile" id="osWorld"><span>◎</span>Our World<small>Berkeley ↔ Kit</small></button><button type="button" class="os-tile" id="osVisit"><span>⌂</span>Visit Mode<small>Enter his world</small></button></div><div class="os-offline-tag">☷ END-TO-END PASSWORD GATEWAY · BETA</div></div></div>';
+ home.querySelector('#osBuddySlot').append(buddyHeader,buddy);
+ const chat=document.createElement('section');chat.className='os-chat';
+ chat.innerHTML='<div class="os-window"><div class="os-titlebar"><span>✉ Instant Message : Dr. Gurathin</span><button type="button" class="os-back" data-back="home">← Buddies</button></div><div id="osChatSlot"></div></div>';
+ chat.querySelector('#osChatSlot').append(msgs);
+ const worldWrap=document.createElement('section');worldWrap.className='os-world';
+ worldWrap.innerHTML='<div class="os-window"><div class="os-titlebar"><span>◎ parallel://our-world</span><button type="button" class="os-back" data-back="home">← Buddies</button></div><div id="osWorldSlot"></div></div>';
+ worldWrap.querySelector('#osWorldSlot').append(world);
+ const visitWrap=document.createElement('section');visitWrap.className='os-visit';
+ visitWrap.innerHTML='<div class="os-window"><div class="os-titlebar"><span>⌂ parallel://visit</span><button type="button" class="os-back" data-back="home">← Buddies</button></div><div id="osVisitSlot"></div></div>';
+ visitWrap.querySelector('#osVisitSlot').append(visit);
+ const settings=document.createElement('section');settings.className='os-settings';
+ settings.innerHTML='<div class="os-window"><div class="os-titlebar">⚙ Preferences / Developer Tools</div><div style="padding:12px"><h3>Sounds & testing</h3><div id="osSettingsSlot"></div><p class="os-privacy">🔒 AI requests require your Cloudflare login. Messages and notebook notes also remain in this browser. Voice calling and notifications are not active yet.</p></div></div>';
+ settings.querySelector('#osSettingsSlot').append(sound,dev,tools);
+ screen.append(home,chat,worldWrap,visitWrap,settings);
+ main.append(head,screen,nav);
+ // The old tabs remain as internal app hooks; only the OS navigator is visible.
+ tabs.classList.add('hidden');
+ const sections={home,chat,world:worldWrap,visit:visitWrap,settings};
+ function openView(view){
+   for(const [key,element] of Object.entries(sections))element.classList.toggle('hidden',view!==key);
+   for(const btn of nav.querySelectorAll('[data-view]'))btn.classList.toggle('active',btn.dataset.view===view);
+   if(view==='chat'){tabs.querySelector('[data-tab="messages"]').click();render();}
+   if(view==='world')tabs.querySelector('[data-tab="world"]').click();
+   if(view==='visit')tabs.querySelector('[data-tab="visit"]').click();
+   window.scrollTo(0,0);
+ }
+ nav.addEventListener('click',e=>{const button=e.target.closest('[data-view]');if(button)openView(button.dataset.view);});
+ screen.addEventListener('click',e=>{const back=e.target.closest('[data-back]');if(back)openView(back.dataset.back);});
+ $('openBuddyChat').addEventListener('click',()=>openView('chat'));
+ home.querySelector('#osWorld').addEventListener('click',()=>openView('world'));
+ home.querySelector('#osVisit').addEventListener('click',()=>openView('visit'));
+ openView('home');
+}
+installParallelOS();
+
 if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script></body></html>
