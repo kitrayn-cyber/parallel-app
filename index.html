@@ -11,7 +11,7 @@
 .lock-card input{display:block;width:100%;margin:18px 0 11px;padding:14px;color:white;background:#161225;border:1px solid #756092;border-radius:12px;font-size:16px}
 .lock-card button{width:100%;border:0;border-radius:12px;padding:13px;background:#9974cf;color:white;font-size:15px;font-weight:700;cursor:pointer}
 .lock-card button:disabled{opacity:.6}.lock-error{min-height:23px;color:#ffb8c2;font-size:13px;margin-top:12px}
-</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Password is kept in this page only; re-enter it after refreshing.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.6">/ prototype 0.1</span></div><div class="pill">Fictional simulation</div></div><div class="profile"><div class="avatar">☕</div><div><div class="name">Gurathin</div><div class="small" id="activity">Checking schedule...</div></div></div><div class="soundbar" role="group" aria-label="Retro sound controls"><button type="button" id="soundToggle" class="soundtoggle" aria-pressed="true">🔊 Sounds on</button><button type="button" id="soundTest">♪ Test sounds</button><span class="soundlabel">AIM-inspired original sounds</span></div><div class="tabs"><button class="on" data-tab="messages">Messages</button><button data-tab="world">Our World</button><button data-tab="visit">Visit</button></div><section class="screen" id="messages"><div class="chat" id="chat" aria-live="polite"></div><div class="status" id="status"></div><form class="entry" id="form"><input id="input" autocomplete="off" aria-label="Message" placeholder="Message Gura..."><button type="submit">Send</button></form><div class="note">Prototype: responses are scripted, with actual randomized delays while this page is open. AI, background messages, and push notifications come later.</div></section><section class="screen hidden" id="world"><div class="world"><h3>🌎 Our World</h3><div>🔬 <strong>Gura</strong> · Fictional California</div><div id="worldActivity"></div><label for="kitloc">🐈 Your simulated location</label><select id="kitloc"><option value="University">University</option><option value="Home">Home</option><option value="Coffee shop">Coffee shop</option><option value="Airport">Airport</option><option value="Visiting Gura">Visiting Gura</option></select><p class="note">This prototype uses a location you choose, not your real GPS. Future versions can offer optional real-location sharing with an off switch.</p></div></section><section class="screen hidden" id="visit"><div class="world"><h3>🚪 Visit Mode</h3><p>You step into a fictional scene instead of texting.</p><p id="scene">Gura is at home, finishing some work. A half-empty mug of coffee sits beside his laptop.</p><button class="action" id="visitBtn">Knock on the door</button><p class="note">Early interactive sample; full AI roleplay comes after chat integration.</p></div></section></main><script>
+</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Password is kept in this page only; re-enter it after refreshing.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.6">/ prototype 0.1</span></div><div class="pill">Fictional simulation</div></div><div class="profile"><div class="avatar">☕</div><div><div class="name">Gurathin</div><div class="small" id="activity">Checking schedule...</div></div></div><div class="soundbar" role="group" aria-label="Retro sound controls"><button type="button" id="soundToggle" class="soundtoggle" aria-pressed="true">🔊 Sounds on</button><button type="button" id="soundTest">♪ Test sounds</button><span class="soundlabel">AIM-inspired original sounds</span></div><div class="tabs"><button class="on" data-tab="messages">Messages</button><button data-tab="world">Our World</button><button data-tab="visit">Visit</button></div><section class="screen" id="messages"><div class="chat" id="chat" aria-live="polite"></div><div class="status" id="status"></div><form class="entry" id="form"><input id="input" autocomplete="off" aria-label="Message" placeholder="Message Gura..."><button type="submit">Send</button></form><div class="note">AI chat beta: Gura replies with a randomized delay when available. Limited to 20 AI requests per day on this device; no background delivery yet.</div></section><section class="screen hidden" id="world"><div class="world"><h3>🌎 Our World</h3><div>🔬 <strong>Gura</strong> · Fictional California</div><div id="worldActivity"></div><label for="kitloc">🐈 Your simulated location</label><select id="kitloc"><option value="University">University</option><option value="Home">Home</option><option value="Coffee shop">Coffee shop</option><option value="Airport">Airport</option><option value="Visiting Gura">Visiting Gura</option></select><p class="note">This prototype uses a location you choose, not your real GPS. Future versions can offer optional real-location sharing with an off switch.</p></div></section><section class="screen hidden" id="visit"><div class="world"><h3>🚪 Visit Mode</h3><p>You step into a fictional scene instead of texting.</p><p id="scene">Gura is at home, finishing some work. A half-empty mug of coffee sits beside his laptop.</p><button class="action" id="visitBtn">Knock on the door</button><p class="note">Early interactive sample; full AI roleplay comes after chat integration.</p></div></section></main><script>
 const $=id=>document.getElementById(id);
 
 const WORKER_URL = "https://parallel-ai.chloerayn.workers.dev/";
@@ -71,10 +71,55 @@ retroSound.sync();
 $('soundToggle').addEventListener('click',retroSound.toggle);
 $('soundTest').addEventListener('click',()=>{if(localStorage.getItem('parallel-sounds')==='off')return;retroSound.play('signon');setTimeout(()=>retroSound.play('incoming'),850);setTimeout(()=>retroSound.play('sent'),1500);setTimeout(()=>retroSound.play('signoff'),1900)});
 const key='parallel-prototype-messages';let messages=[];try{messages=JSON.parse(localStorage.getItem(key))||[]}catch{}if(!messages.length)messages=[{from:'them',text:'Did you eat dinner, or did you get distracted by your website again?',at:Date.now()}];
-const responses=['I was working. What is it?','You could have led with that information.','Hm. Tell me what happened.','Have you eaten? That is a question, not a suggestion.','I have a few minutes before I have to get back to work.','You have an impressive ability to derail my entire afternoon.'];let replyTimer=null;
+let replyTimer=null;
+let aiRequestRunning=false;
+// Soft on-device spending safeguard; server-side rate limits are still needed.
+const DAILY_AI_CAP=20;
+function quotaKey(){return "parallel-ai-usage-"+new Date().toISOString().slice(0,10)}
+function quotaLeft(){return Math.max(0,DAILY_AI_CAP-Number(localStorage.getItem(quotaKey())||0))}
+function useQuota(){localStorage.setItem(quotaKey(),String(DAILY_AI_CAP-quotaLeft()+1))}
+async function aiReply(){
+  if(aiRequestRunning||!parallelPassword)return;
+  if(quotaLeft()===0){$('status').textContent='Daily AI demo limit reached (20 requests).';return;}
+  aiRequestRunning=true;
+  $('status').textContent='Gura is typing...';
+  try{
+    const payload=messages.slice(-12).filter(m=>m.from==='me'||m.from==='them').map(m=>({
+      role:m.from==='me'?'user':'model',text:m.text
+    }));
+    useQuota();
+    const response=await fetch(WORKER_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+parallelPassword},
+      body:JSON.stringify({messages:payload}),
+      cache:'no-store'
+    });
+    const result=await response.json();
+    if(!response.ok)throw new Error(response.status===401?'Login expired. Refresh and unlock again.':
+      'AI error '+response.status+(result.status?' (Gemini '+result.status+')':''));
+    if(typeof result.reply!=='string'||!result.reply.trim())throw new Error('Empty AI response');
+    messages.push({from:'them',text:result.reply.trim(),at:Date.now()});
+    retroSound.play('incoming');$('status').textContent='';render();
+  }catch(err){$('status').textContent=err.message||'Could not reach Gura. Please try again.';}
+  finally{aiRequestRunning=false;}
+}
 const save=()=>localStorage.setItem(key,JSON.stringify(messages));function render(){const chat=$('chat');chat.innerHTML='';messages.forEach(m=>{let div=document.createElement('div');div.className='bubble '+m.from;div.textContent=m.text;let t=document.createElement('div');t.className='time';t.textContent=new Date(m.at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});div.append(t);chat.append(div)});chat.scrollTop=chat.scrollHeight;save()}
 function scheduleState(){const now=new Date();const fmt=new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',hour:'numeric',hourCycle:'h23',weekday:'short'}).formatToParts(now);const hour=Number(fmt.find(p=>p.type==='hour').value);const day=fmt.find(p=>p.type==='weekday').value;const work=!['Sat','Sun'].includes(day);let title,available;if(hour<7||hour>=23){title='Asleep · California';available=false}else if(work&&hour>=9&&hour<12){title='At the research lab · Phone silent';available=false}else if(work&&hour>=13&&hour<17){title='Working · Limited replies';available=false}else if(work&&hour>=12&&hour<13){title='Lunch break · May reply';available=true}else{title='Personal time · California';available=true}return {title,available,hour,work}}
-function update(){const s=scheduleState();$('activity').textContent=s.title;$('worldActivity').textContent='Current simulated activity: '+s.title;return s}function queueReply(){if(replyTimer)return;const s=update();if(!s.available){$('status').textContent='Delivered · Gura is unavailable during this part of his day';return}const ms=30000+Math.floor(Math.random()*330000);const due=Date.now()+ms;localStorage.setItem('parallel-pending',String(due));$('status').textContent='Delivered · Reply pending';replyTimer=setTimeout(deliver,ms)}function deliver(){replyTimer=null;localStorage.removeItem('parallel-pending');if(!update().available){$('status').textContent='Delivered · He is busy';return}messages.push({from:'them',text:responses[Math.floor(Math.random()*responses.length)],at:Date.now()});retroSound.play('incoming');$('status').textContent='';render()}
+function update(){const s=scheduleState();$('activity').textContent=s.title;$('worldActivity').textContent='Current simulated activity: '+s.title;return s}
+function queueReply(){
+  if(replyTimer||aiRequestRunning)return;
+  const state=update();
+  if(!state.available){$('status').textContent='Delivered · Gura is unavailable during this part of his day';return;}
+  const ms=30000+Math.floor(Math.random()*330000);
+  const due=Date.now()+ms;localStorage.setItem('parallel-pending',String(due));
+  $('status').textContent='Delivered · Reply pending';
+  replyTimer=setTimeout(deliver,ms);
+}
+function deliver(){
+  replyTimer=null;localStorage.removeItem('parallel-pending');
+  if(!update().available){$('status').textContent='Delivered · He is busy';return;}
+  aiReply();
+}
 $('form').addEventListener('submit',e=>{e.preventDefault();const val=$('input').value.trim();if(!val)return;messages.push({from:'me',text:val,at:Date.now()});retroSound.play('sent');$('input').value='';render();queueReply()});document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b===btn));['messages','world','visit'].forEach(id=>$(id).classList.toggle('hidden',id!==btn.dataset.tab));if(btn.dataset.tab==='messages')render()}));$('kitloc').value=localStorage.getItem('parallel-kitloc')||'University';$('kitloc').addEventListener('change',e=>localStorage.setItem('parallel-kitloc',e.target.value));$('visitBtn').addEventListener('click',()=>{$('scene').textContent='He opens the door, looking over his glasses. “You could have told me you were coming.” He steps aside to let you in.';$('visitBtn').textContent='Scene started'});render();update();setInterval(update,60000);
 // Resume pending delay after tab refresh if it has not elapsed; no background execution.
 const p=Number(localStorage.getItem('parallel-pending'));if(p&&messages.at(-1)?.from==='me'){const remaining=Math.max(1000,p-Date.now());if(update().available){$('status').textContent='Delivered · Reply pending';replyTimer=setTimeout(deliver,remaining)}}
