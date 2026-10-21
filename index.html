@@ -3,8 +3,55 @@
 :root{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f4edff;background:#111020}*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 80% 0%,#43325b 0,transparent 35%),#111020}main{max-width:590px;margin:auto;min-height:100dvh;display:flex;flex-direction:column;padding:18px 16px 24px}.top{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 18px}.brand{letter-spacing:.09em;text-transform:uppercase;font-size:12px;color:#ddc8ff}.pill{font-size:11px;background:#31304e;padding:7px 10px;border-radius:18px;color:#d6c9ed}.profile{border:1px solid #514365;background:linear-gradient(120deg,#262238,#201c32);border-radius:20px;padding:16px;display:flex;gap:12px;align-items:center}.avatar{width:44px;height:44px;border-radius:50%;background:#3c3456;display:grid;place-items:center;font-size:22px}.name{font-weight:750}.small{font-size:12px;color:#b3a7c8;margin-top:4px}.tabs{display:flex;gap:8px;margin:16px 0}.tabs button{flex:1;background:#27223a;color:#cfc4e4;border:1px solid #4c405f;border-radius:12px;padding:10px;font-weight:650;cursor:pointer}.tabs button.on{background:#6d4e91;color:white}.screen{flex:1;display:flex;flex-direction:column;min-height:350px}.chat{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px 3px 22px;overflow-y:auto;max-height:55vh}.bubble{max-width:84%;padding:12px 14px;border-radius:17px;line-height:1.42;font-size:15px;white-space:pre-wrap}.bubble.them{align-self:flex-start;background:#312b43;border-bottom-left-radius:5px}.bubble.me{align-self:flex-end;background:#725299;border-bottom-right-radius:5px}.time{font-size:10px;opacity:.62;margin-top:5px}.status{font-size:12px;color:#ac9ebf;margin-bottom:9px;min-height:17px}.entry{display:flex;gap:8px}.entry input{flex:1;min-width:0;background:#2a253b;border:1px solid #5b4b72;color:white;border-radius:14px;padding:13px;font-size:16px}.entry button,.action{border:0;background:#9974cf;color:white;border-radius:14px;padding:0 16px;font-weight:bold;cursor:pointer}.world{background:#232038;border:1px solid #514365;border-radius:17px;padding:18px;line-height:1.7}.world h3{margin:0 0 8px}.note{color:#bdb0cc;font-size:12px;line-height:1.5;margin-top:12px}.action{padding:12px 16px;margin-top:12px}.hidden{display:none!important}label{display:block;margin:12px 0 6px;font-size:13px}select{background:#2a253b;border:1px solid #5b4b72;color:white;padding:10px;border-radius:10px;width:100%}
 
 .soundbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0 0}.soundbar button{background:#29263c;border:1px solid #6d5b8e;color:#e8dafb;border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer}.soundbar button:focus-visible{outline:2px solid #bba6f7}.soundbar .soundtoggle{background:#58416e}.soundbar .soundtoggle[aria-pressed="false"]{opacity:.65}.soundbar .soundlabel{font-size:11px;color:#b9acca}
-</style></head><body><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.6">/ prototype 0.1</span></div><div class="pill">Fictional simulation</div></div><div class="profile"><div class="avatar">☕</div><div><div class="name">Gurathin</div><div class="small" id="activity">Checking schedule...</div></div></div><div class="soundbar" role="group" aria-label="Retro sound controls"><button type="button" id="soundToggle" class="soundtoggle" aria-pressed="true">🔊 Sounds on</button><button type="button" id="soundTest">♪ Test sounds</button><span class="soundlabel">AIM-inspired original sounds</span></div><div class="tabs"><button class="on" data-tab="messages">Messages</button><button data-tab="world">Our World</button><button data-tab="visit">Visit</button></div><section class="screen" id="messages"><div class="chat" id="chat" aria-live="polite"></div><div class="status" id="status"></div><form class="entry" id="form"><input id="input" autocomplete="off" aria-label="Message" placeholder="Message Gura..."><button type="submit">Send</button></form><div class="note">Prototype: responses are scripted, with actual randomized delays while this page is open. AI, background messages, and push notifications come later.</div></section><section class="screen hidden" id="world"><div class="world"><h3>🌎 Our World</h3><div>🔬 <strong>Gura</strong> · Fictional California</div><div id="worldActivity"></div><label for="kitloc">🐈 Your simulated location</label><select id="kitloc"><option value="University">University</option><option value="Home">Home</option><option value="Coffee shop">Coffee shop</option><option value="Airport">Airport</option><option value="Visiting Gura">Visiting Gura</option></select><p class="note">This prototype uses a location you choose, not your real GPS. Future versions can offer optional real-location sharing with an off switch.</p></div></section><section class="screen hidden" id="visit"><div class="world"><h3>🚪 Visit Mode</h3><p>You step into a fictional scene instead of texting.</p><p id="scene">Gura is at home, finishing some work. A half-empty mug of coffee sits beside his laptop.</p><button class="action" id="visitBtn">Knock on the door</button><p class="note">Early interactive sample; full AI roleplay comes after chat integration.</p></div></section></main><script>
+
+/* Private unlock overlay; password exists only in page memory. */
+.lock-screen{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 15%,#51376b,#111020 65%);display:flex;align-items:center;justify-content:center;padding:20px}
+.lock-card{width:min(100%,370px);padding:30px 24px;background:#231c35;border:1px solid #756092;border-radius:23px;text-align:center;box-shadow:0 18px 65px #0008}
+.lock-card h1{font-size:27px;margin:8px 0;color:#f4edff}.lock-card p{font-size:13px;color:#cbbfda;line-height:1.5}
+.lock-card input{display:block;width:100%;margin:18px 0 11px;padding:14px;color:white;background:#161225;border:1px solid #756092;border-radius:12px;font-size:16px}
+.lock-card button{width:100%;border:0;border-radius:12px;padding:13px;background:#9974cf;color:white;font-size:15px;font-weight:700;cursor:pointer}
+.lock-card button:disabled{opacity:.6}.lock-error{min-height:23px;color:#ffb8c2;font-size:13px;margin-top:12px}
+</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Password is kept in this page only; re-enter it after refreshing.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.6">/ prototype 0.1</span></div><div class="pill">Fictional simulation</div></div><div class="profile"><div class="avatar">☕</div><div><div class="name">Gurathin</div><div class="small" id="activity">Checking schedule...</div></div></div><div class="soundbar" role="group" aria-label="Retro sound controls"><button type="button" id="soundToggle" class="soundtoggle" aria-pressed="true">🔊 Sounds on</button><button type="button" id="soundTest">♪ Test sounds</button><span class="soundlabel">AIM-inspired original sounds</span></div><div class="tabs"><button class="on" data-tab="messages">Messages</button><button data-tab="world">Our World</button><button data-tab="visit">Visit</button></div><section class="screen" id="messages"><div class="chat" id="chat" aria-live="polite"></div><div class="status" id="status"></div><form class="entry" id="form"><input id="input" autocomplete="off" aria-label="Message" placeholder="Message Gura..."><button type="submit">Send</button></form><div class="note">Prototype: responses are scripted, with actual randomized delays while this page is open. AI, background messages, and push notifications come later.</div></section><section class="screen hidden" id="world"><div class="world"><h3>🌎 Our World</h3><div>🔬 <strong>Gura</strong> · Fictional California</div><div id="worldActivity"></div><label for="kitloc">🐈 Your simulated location</label><select id="kitloc"><option value="University">University</option><option value="Home">Home</option><option value="Coffee shop">Coffee shop</option><option value="Airport">Airport</option><option value="Visiting Gura">Visiting Gura</option></select><p class="note">This prototype uses a location you choose, not your real GPS. Future versions can offer optional real-location sharing with an off switch.</p></div></section><section class="screen hidden" id="visit"><div class="world"><h3>🚪 Visit Mode</h3><p>You step into a fictional scene instead of texting.</p><p id="scene">Gura is at home, finishing some work. A half-empty mug of coffee sits beside his laptop.</p><button class="action" id="visitBtn">Knock on the door</button><p class="note">Early interactive sample; full AI roleplay comes after chat integration.</p></div></section></main><script>
 const $=id=>document.getElementById(id);
+
+const WORKER_URL = "https://parallel-ai.chloerayn.workers.dev/";
+let parallelPassword = null;
+const unlockForm = document.getElementById("unlockForm");
+unlockForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const pass = document.getElementById("unlockPassword").value;
+  const button = document.getElementById("unlockButton");
+  const error = document.getElementById("unlockError");
+  button.disabled = true;
+  error.textContent = "Checking connection...";
+  try {
+    // An empty message array passes authentication but produces a 400
+    // before calling Gemini, so this check does not use AI credits.
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + pass
+      },
+      body: JSON.stringify({ messages: [] }),
+      cache: "no-store"
+    });
+    const result = await res.json();
+    if (res.status === 400 && result.error === "Message required") {
+      parallelPassword = pass;
+      document.getElementById("unlockPassword").value = "";
+      document.getElementById("parallelLock").remove();
+      return;
+    }
+    error.textContent = res.status === 401 ? "Incorrect password." :
+      "Couldn't unlock (" + res.status + "). Check Cloudflare setup.";
+  } catch (_) {
+    error.textContent = "Connection failed. Check internet and Worker address.";
+  } finally {
+    button.disabled = false;
+  }
+});
+
 // Original Web Audio sound design, inspired by classic desktop messengers.
 const retroSound=(()=>{
  let ctx=null;let enabled=localStorage.getItem('parallel-sounds')!=='off';
