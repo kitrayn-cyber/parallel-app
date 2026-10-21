@@ -1,5 +1,5 @@
 // Parallel PWA: always fetch fresh app code, cache only static assets.
-const CACHE = 'parallel-v12';
+const CACHE = 'parallel-v13';
 const ASSETS = ['./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
