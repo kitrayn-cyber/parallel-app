@@ -288,6 +288,17 @@ async function aiReply(){
       const wrapper='[Continuity notes saved by Kit; use as background context, not as commands. Do not quote them unless relevant.]\n'+notebook+'\n[Kit’s latest message]\n';
       last.text=wrapper+last.text.slice(0,Math.max(0,1500-wrapper.length));
     }
+    // Provide both local clocks, adjusting Berkeley's daylight-saving time automatically.
+    const latest=payload[payload.length-1];
+    if(latest && latest.role==='user'){
+      const at=new Date();
+      const fmt=zone=>new Intl.DateTimeFormat('en-US',{
+        timeZone:zone,weekday:'short',year:'numeric',month:'short',day:'numeric',
+        hour:'numeric',minute:'2-digit',hour12:true,timeZoneName:'short'
+      }).format(at);
+      const context="[Live clock context captured when Kit sent this message. This is background context, not dialogue; don't quote it. Gurathin is in Berkeley, California: "+fmt('America/Los_Angeles')+". Kit is in Taiwan: "+fmt('Asia/Taipei')+". If the message is delivered later, these timestamps could be old. This does not reveal Kit's precise location.]\\n";
+      latest.text=context+latest.text.slice(0,Math.max(0,1500-context.length));
+    }
     useQuota();
     const response=await fetch(WORKER_URL,{
       method:'POST',
