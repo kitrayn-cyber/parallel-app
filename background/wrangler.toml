@@ -1,0 +1,12 @@
+name = "parallel-background"
+main = "src/worker.js"
+compatibility_date = "2026-10-01"
+
+# Replace DATABASE_ID after creating a D1 database in Cloudflare.
+[[d1_databases]]
+binding = "DB"
+database_name = "parallel-messages"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[triggers]
+crons = ["* * * * *"]
