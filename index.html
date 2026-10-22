@@ -418,7 +418,7 @@ function installParallelOS(){
  const tabs=main.querySelector('.tabs');
  const msgs=$('messages'),world=$('world'),visit=$('visit');
  const nav=document.createElement('nav');nav.className='os-bottom';nav.setAttribute('aria-label','Parallel navigation');
- nav.innerHTML='<button type="button" data-view="home"><span>▦</span>Buddies</button><button type="button" data-view="chat"><span>▤</span>Messages</button><button type="button" data-view="world"><span>◎</span>World</button><button type="button" data-view="settings"><span>⚙</span>Settings</button>';
+ nav.innerHTML='<button type="button" data-view="home"><span aria-hidden="true">☏</span>Buddies</button><button type="button" data-view="chat"><span aria-hidden="true">✉</span>Messages</button><button type="button" data-view="world"><span>◎</span>World</button><button type="button" data-view="settings"><span>⚙</span>Settings</button>';
  const head=document.createElement('div');head.className='os-head';head.innerHTML='<span>◉ SYSTEM ONLINE</span><span>PARALLEL.EXE / 2004 EDITION</span>';
  const screen=document.createElement('div');screen.className='os-screen';
  const home=document.createElement('section');home.className='os-home';
