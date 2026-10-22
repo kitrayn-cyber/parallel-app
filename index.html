@@ -234,6 +234,9 @@ unlockForm.addEventListener("submit", async event => {
   }
 });
 
+// Previously trusted devices can unlock automatically after rechecking the Worker.
+if(rememberedPassword) unlockForm.requestSubmit();
+
 // Original Web Audio sound design, inspired by classic desktop messengers.
 const retroSound=(()=>{
  let ctx=null;let enabled=localStorage.getItem('parallel-sounds')!=='off';
