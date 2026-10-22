@@ -164,6 +164,16 @@ main{background:linear-gradient(160deg,#fff9ff,#ffe8f5 55%,#eee5ff)!important;bo
 .os-home .os-quick{margin-top:15px}
 @media(prefers-reduced-motion:reduce){.blinky.sparkle{animation:none}}
 .photo-attach{min-width:42px;font-size:21px!important;padding:0 9px!important}.photo-file{display:none!important}.photo-preview{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fff1fa;border-top:1px solid #e2abd0;color:#6b4268;font:12px Tahoma,sans-serif}.photo-preview img{width:58px;height:58px;object-fit:cover;border:2px solid #e6a0cd;border-radius:4px}.photo-preview button{margin-left:auto;border:2px outset white;background:#f8d9ee;padding:7px 10px;color:#864b78}.bubble-photo{display:block;max-width:min(230px,65vw);max-height:300px;width:auto;height:auto;object-fit:contain;border-radius:5px;cursor:zoom-in;margin-top:6px}.photo-lightbox{position:fixed;inset:0;z-index:10000;background:#08020be8;display:flex;align-items:center;justify-content:center;padding:20px}.photo-lightbox img{max-width:95vw;max-height:88dvh;object-fit:contain}.photo-lightbox button{position:absolute;top:18px;right:18px;background:white;border:0;border-radius:8px;padding:10px;font-size:20px}
+
+/* Kit / Gura dual live clocks */
+.parallel-clocks{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:linear-gradient(120deg,#fff0fa,#e5f5ff);border-bottom:2px ridge #fff;font-family:Tahoma,Arial,sans-serif}
+.parallel-clock{min-width:0;border:1px solid #e3b9d6;background:#fff9ff;border-radius:5px;text-align:center;padding:8px 4px;box-shadow:inset 1px 1px #fff}
+.parallel-clock:nth-child(2){border-color:#a7cad2;background:#f5ffff}
+.parallel-clock-label{color:#805b83;font-size:10px;font-weight:700;letter-spacing:.03em}
+.parallel-clock-time{color:#432c55;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.35}
+.parallel-clock-day{color:#866e89;font-size:10px}
+.parallel-clock-note{grid-column:1/-1;text-align:center;font:10px Tahoma,Arial,sans-serif;color:#826986}
+@media(max-width:360px){.parallel-clock-time{font-size:17px}.parallel-clocks{padding:7px;gap:5px}}
 </style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Password is kept in this page only; re-enter it after refreshing.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.65;font-size:11px">/ Y2K // 1.1</span></div><div class="pill">● PRIVATE LINK</div></div><div class="buddy-list-header"><span>◈ Buddy List <small>1 contact</small></span><span class="network-label">PARALLEL.NET / PRIVATE</span></div>
 <div class="buddy-card-main" role="group" aria-label="Your contact Dr. Gurathin">
   <div class="buddy-icon">☕</div>
@@ -399,7 +409,7 @@ function installParallelOS(){
  home.innerHTML=`<div class="os-window"><div class="os-titlebar"><span>✦ parallel.exe — buddy list</span><span class="os-winctrl">─ ▣ ✕</span></div><div class="os-desktop"><div class="os-welcome">Welcome back,<br>Kit_</div><div class="os-welcome-sub">> CONNECTION ESTABLISHED<br>> ONE CONTACT DETECTED<br>> CALIFORNIA NODE ACTIVE</div><div class="os-decoration"><span class="blinky sparkle">★ YOU'VE GOT MAIL! ★</span><span class="blinky">100% HANDMADE INTERNET</span></div><div class="pixel-sticker"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" aria-hidden="true"><path fill="#e38cc0" d="M3 1h3v2h4V1h3v4h2v7h-2v2H3v-2H1V5h2z"/><path fill="#fff" d="M3 5h10v7H3z"/><path fill="#6d506d" d="M5 7h2v2H5zm5 0h2v2h-2z"/><path fill="#e38cc0" d="M7 10h3v1H7z"/></svg><span>Kit's private internet corner ♥<small style="display:block;font-size:9px;margin-top:3px">est. 2004 (in spirit)</small></span></div><div class="os-contact-title">▾ MY BUDDIES [1]</div><div id="osBuddySlot"></div><div class="os-quick"><button type="button" class="os-tile" id="osWorld"><span>◎</span>Our World<small>Berkeley ↔ Kit</small></button><button type="button" class="os-tile" id="osVisit"><span>⌂</span>Visit Mode<small>Enter his world</small></button></div><div class="os-offline-tag">☷ PASSWORD-PROTECTED AI · BETA</div></div></div>`;
  home.querySelector('#osBuddySlot').append(buddyHeader,buddy);
  const chat=document.createElement('section');chat.className='os-chat';
- chat.innerHTML='<div class="os-window"><div class="os-titlebar"><span>✉ Instant Message : Dr. Gurathin</span><button type="button" class="os-back" data-back="home">← Buddies</button></div><div id="osChatSlot"></div></div>';
+ chat.innerHTML='<div class="os-window"><div class="os-titlebar"><span>✉ Instant Message : Dr. Gurathin</span><button type="button" class="os-back" data-back="home">← Buddies</button></div><div class="parallel-clocks" role="group" aria-label="Kit and Gurathin local times"><div class="parallel-clock"><div class="parallel-clock-label">🐱 KIT · TAICHUNG</div><div class="parallel-clock-time" id="kitClock">--:--</div><div class="parallel-clock-day" id="kitClockDay">Taiwan</div></div><div class="parallel-clock"><div class="parallel-clock-label">☕ GURA · BERKELEY</div><div class="parallel-clock-time" id="guraClock">--:--</div><div class="parallel-clock-day" id="guraClockDay">California</div></div><div class="parallel-clock-note" id="parallelClockDifference">Two places · one connection ♡</div></div><div id="osChatSlot"></div></div>';
  chat.querySelector('#osChatSlot').append(msgs);
  const worldWrap=document.createElement('section');worldWrap.className='os-world';
  worldWrap.innerHTML='<div class="os-window"><div class="os-titlebar"><span>◎ parallel://our-world</span><button type="button" class="os-back" data-back="home">← Buddies</button></div><div id="osWorldSlot"></div></div>';
@@ -430,7 +440,21 @@ function installParallelOS(){
  home.querySelector('#osVisit').addEventListener('click',()=>openView('visit'));
  openView('home');
 }
+function updateParallelClocks(){
+ const now=new Date();
+ const regions=[['kitClock','kitClockDay','Asia/Taipei'],['guraClock','guraClockDay','America/Los_Angeles']];
+ for(const [clockId,dayId,zone] of regions){
+  document.getElementById(clockId).textContent=new Intl.DateTimeFormat('en-US',{timeZone:zone,hour:'numeric',minute:'2-digit',hour12:true}).format(now);
+  document.getElementById(dayId).textContent=new Intl.DateTimeFormat('en-US',{timeZone:zone,weekday:'long',month:'short',day:'numeric'}).format(now);
+ }
+ const hourIn=zone=>Number(new Intl.DateTimeFormat('en-US',{timeZone:zone,hour:'numeric',hourCycle:'h23'}).format(now));
+ const gap=(hourIn('Asia/Taipei')-hourIn('America/Los_Angeles')+24)%24;
+ document.getElementById('parallelClockDifference').textContent='Kit is '+gap+' hours ahead · clocks update live ♡';
+}
 installParallelOS();
+updateParallelClocks();
+setInterval(updateParallelClocks,15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateParallelClocks();});
 
 if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script></body></html>
