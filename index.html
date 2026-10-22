@@ -165,6 +165,7 @@ main{background:linear-gradient(160deg,#fff9ff,#ffe8f5 55%,#eee5ff)!important;bo
 @media(prefers-reduced-motion:reduce){.blinky.sparkle{animation:none}}
 .photo-attach{min-width:42px;font-size:21px!important;padding:0 9px!important}.photo-file{display:none!important}.photo-preview{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fff1fa;border-top:1px solid #e2abd0;color:#6b4268;font:12px Tahoma,sans-serif}.photo-preview img{width:58px;height:58px;object-fit:cover;border:2px solid #e6a0cd;border-radius:4px}.photo-preview button{margin-left:auto;border:2px outset white;background:#f8d9ee;padding:7px 10px;color:#864b78}.bubble-photo{display:block;max-width:min(230px,65vw);max-height:300px;width:auto;height:auto;object-fit:contain;border-radius:5px;cursor:zoom-in;margin-top:6px}.photo-lightbox{position:fixed;inset:0;z-index:10000;background:#08020be8;display:flex;align-items:center;justify-content:center;padding:20px}.photo-lightbox img{max-width:95vw;max-height:88dvh;object-fit:contain}.photo-lightbox button{position:absolute;top:18px;right:18px;background:white;border:0;border-radius:8px;padding:10px;font-size:20px}
 
+.remember-label{display:flex;align-items:center;gap:7px;font:12px Tahoma,Arial,sans-serif;color:#754769;text-align:left;margin:9px 0}.remember-label input{width:16px;height:16px;accent-color:#b477b2}.forget-device{font:11px Tahoma,Arial,sans-serif;border:1px solid #a479a4;background:#fff0f8;color:#734770;border-radius:4px;padding:5px 8px;margin:8px 0;cursor:pointer}
 /* Kit / Gura dual live clocks */
 .parallel-clocks{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:linear-gradient(120deg,#fff0fa,#e5f5ff);border-bottom:2px ridge #fff;font-family:Tahoma,Arial,sans-serif}
 .parallel-clock{min-width:0;border:1px solid #e3b9d6;background:#fff9ff;border-radius:5px;text-align:center;padding:8px 4px;box-shadow:inset 1px 1px #fff}
@@ -174,7 +175,7 @@ main{background:linear-gradient(160deg,#fff9ff,#ffe8f5 55%,#eee5ff)!important;bo
 .parallel-clock-day{color:#866e89;font-size:10px}
 .parallel-clock-note{grid-column:1/-1;text-align:center;font:10px Tahoma,Arial,sans-serif;color:#826986}
 @media(max-width:360px){.parallel-clock-time{font-size:17px}.parallel-clocks{padding:7px;gap:5px}}
-</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Password is kept in this page only; re-enter it after refreshing.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.65;font-size:11px">/ Y2K // 1.1</span></div><div class="pill">● PRIVATE LINK</div></div><div class="buddy-list-header"><span>◈ Buddy List <small>1 contact</small></span><span class="network-label">PARALLEL.NET / PRIVATE</span></div>
+</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><label class="remember-label"><input type="checkbox" id="rememberMe"> Remember me on this device</label><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Only use Remember me on your private device. It saves the login locally until you choose Forget this device.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.65;font-size:11px">/ Y2K // 1.1</span></div><div class="pill">● PRIVATE LINK</div></div><div class="buddy-list-header"><span>◈ Buddy List <small>1 contact</small></span><span class="network-label">PARALLEL.NET / PRIVATE</span></div>
 <div class="buddy-card-main" role="group" aria-label="Your contact Dr. Gurathin">
   <div class="buddy-icon">☕</div>
   <div class="buddy-details"><div class="buddy-title"><span class="buddy-light" id="buddyLight"></span><strong>Dr. Gurathin</strong><span class="buddy-tag">01</span></div>
@@ -186,7 +187,14 @@ const $=id=>document.getElementById(id);
 
 const WORKER_URL = "https://parallel-ai.chloerayn.workers.dev/";
 let parallelPassword = null;
+const REMEMBER_KEY='parallel-remembered-login-v1';
 const unlockForm = document.getElementById("unlockForm");
+const rememberedPassword=localStorage.getItem(REMEMBER_KEY);
+if(rememberedPassword){
+ document.getElementById('unlockPassword').value=rememberedPassword;
+ document.getElementById('rememberMe').checked=true;
+}
+
 unlockForm.addEventListener("submit", async event => {
   event.preventDefault();
   const pass = document.getElementById("unlockPassword").value;
@@ -209,10 +217,14 @@ unlockForm.addEventListener("submit", async event => {
     const result = await res.json();
     if (res.status === 400 && result.error === "Message required") {
       parallelPassword = pass;
+      if(document.getElementById('rememberMe').checked){
+        try{localStorage.setItem(REMEMBER_KEY,pass);}catch(_){}
+      }else{localStorage.removeItem(REMEMBER_KEY);}
       document.getElementById("unlockPassword").value = "";
       document.getElementById("parallelLock").remove();
       return;
     }
+    if(res.status===401){localStorage.removeItem(REMEMBER_KEY);document.getElementById('rememberMe').checked=false;}
     error.textContent = res.status === 401 ? "Incorrect password." :
       "Couldn't unlock (" + res.status + "). Check Cloudflare setup.";
   } catch (_) {
@@ -452,6 +464,13 @@ function updateParallelClocks(){
  document.getElementById('parallelClockDifference').textContent='Kit is '+gap+' hours ahead · clocks update live ♡';
 }
 installParallelOS();
+const forget=document.createElement('button');
+forget.type='button';forget.className='forget-device';forget.textContent='🔓 Forget this device';
+forget.addEventListener('click',()=>{
+ localStorage.removeItem(REMEMBER_KEY);
+ alert('Saved login removed. It will ask for your password the next time you open Parallel.');
+});
+document.querySelector('.os-settings #osSettingsSlot').append(forget);
 updateParallelClocks();
 setInterval(updateParallelClocks,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateParallelClocks();});
