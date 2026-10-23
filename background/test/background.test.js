@@ -8,7 +8,7 @@ import { available, dueAt } from '../src/schedule.js';
 crypto.subtle.timingSafeEqual=(a,b)=>timingSafeEqual(Buffer.from(a),Buffer.from(b));
 const migration=readFileSync(new URL('../migrations/0001_background.sql',import.meta.url),'utf8');
 function setup(){
-  const db=new DatabaseSync(':memory:'); db.exec(migration);db.exec(readFileSync(new URL('../migrations/0002_security.sql',import.meta.url),'utf8'));
+  const db=new DatabaseSync(':memory:'); db.exec(migration);db.exec(readFileSync(new URL('../migrations/0003_life.sql',import.meta.url),'utf8'));db.exec(readFileSync(new URL('../migrations/0002_security.sql',import.meta.url),'utf8'));
   const DB={prepare(query){return {bind(...args){return {async all(){return {results:db.prepare(query).all(...args)};},async first(){return db.prepare(query).get(...args)||null;},async run(){const r=db.prepare(query).run(...args);return {meta:{changes:Number(r.changes),last_row_id:Number(r.lastInsertRowid)}};}};}};},
     async batch(statements){db.exec('BEGIN');try{const result=[];for(const s of statements)result.push(await s.run());db.exec('COMMIT');return result;}catch(e){db.exec('ROLLBACK');throw e;}}};
   let calls=0;
@@ -72,7 +72,7 @@ test('push endpoint validation prevents arbitrary fetch targets',()=>{
 test('additive migration preserves pre-existing conversations and memory',()=>{
   const db=new DatabaseSync(':memory:');db.exec(readFileSync(new URL('../../database/schema.sql',import.meta.url),'utf8'));
   db.exec("INSERT INTO memories(id,note) VALUES ('memory','Do not erase'); INSERT INTO conversations(id) VALUES ('existing'); INSERT INTO messages(id,conversation_id,sender,body) VALUES ('prior','existing','kit','Preserved prior message');");
-  db.exec(migration);db.exec(migration);
+  db.exec(migration);db.exec(readFileSync(new URL('../migrations/0003_life.sql',import.meta.url),'utf8'));db.exec(migration);db.exec(readFileSync(new URL('../migrations/0003_life.sql',import.meta.url),'utf8'));
   assert.equal(db.prepare('SELECT note FROM memories').get().note,'Do not erase');assert.equal(db.prepare('SELECT id FROM conversations').get().id,'existing');assert.equal(db.prepare('SELECT body FROM messages').get().body,'Preserved prior message');
 });
 test('push is encrypted, persisted before send, and retried independently',async()=>{
@@ -110,4 +110,27 @@ test('live AI contract: Origin, raw JSON limit, latest message and photo storage
   db.exec('UPDATE bg_jobs SET due_at=0');await eligible(()=>processPending(env));
   assert.equal(db.prepare('SELECT state FROM bg_jobs').get().state,'done');
   assert.equal(db.prepare("SELECT photo FROM bg_messages WHERE id='one'").get().photo,photo);
+});
+
+test('sleep defers an existing pending job without AI calls or lost messages',async()=>{
+  const {db,env,request,calls}=setup(),original=Date.now;
+  Date.now=()=>Date.parse('2026-10-26T08:00:00Z');
+  try{
+    assert.equal((await request('/api/messages',msg('sleep-job'))).status,202);
+    db.prepare('UPDATE bg_jobs SET due_at=?').run(Date.now()-1);
+    await processPending(env);
+    const job=db.prepare('SELECT * FROM bg_jobs').get();
+    assert.equal(job.state,'pending');assert.equal(job.attempts,0);assert.equal(calls(),0);assert.ok(job.due_at>Date.now());
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM bg_messages').get().n,1);
+  }finally{Date.now=original;}
+});
+test('stored schedule converges on concurrent first reads and retains randomized delays',async()=>{
+  const {env,db}=setup();
+  const {currentLife,lifeDueAt,storedWeek}=await import('../src/life.js');
+  const [a,b]=await Promise.all([storedWeek(env,'2026-10-19'),storedWeek(env,'2026-10-19')]);
+  assert.deepEqual(a,b);assert.equal(db.prepare('SELECT COUNT(*) AS n FROM life_weeks').get().n,1);
+  const now=Date.parse('2026-10-24T20:00:00Z');
+  assert.equal(await lifeDueAt(env,now,()=>0),now+30000);
+  assert.ok(await lifeDueAt(env,now,()=>0.99)>now+2*3600000);
+  assert.equal((await currentLife(env,await lifeDueAt(env,now,()=>0.99))).available,true);
 });
