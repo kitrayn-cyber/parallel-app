@@ -8,7 +8,7 @@ import { available, dueAt } from '../src/schedule.js';
 crypto.subtle.timingSafeEqual=(a,b)=>timingSafeEqual(Buffer.from(a),Buffer.from(b));
 const migration=readFileSync(new URL('../migrations/0001_background.sql',import.meta.url),'utf8');
 function setup(){
-  const db=new DatabaseSync(':memory:'); db.exec(migration);
+  const db=new DatabaseSync(':memory:'); db.exec(migration);db.exec(readFileSync(new URL('../migrations/0002_security.sql',import.meta.url),'utf8'));
   const DB={prepare(query){return {bind(...args){return {async all(){return {results:db.prepare(query).all(...args)};},async first(){return db.prepare(query).get(...args)||null;},async run(){const r=db.prepare(query).run(...args);return {meta:{changes:Number(r.changes),last_row_id:Number(r.lastInsertRowid)}};}};}};},
     async batch(statements){db.exec('BEGIN');try{const result=[];for(const s of statements)result.push(await s.run());db.exec('COMMIT');return result;}catch(e){db.exec('ROLLBACK');throw e;}}};
   let calls=0;

@@ -2,7 +2,7 @@
 (() => {
   const URL_KEY='parallel-background-url-v1', CID_KEY='parallel-conversation-id-v1';
   const ARCHIVE_CID='parallel-archive-conversation-id-v1';
-  let base=localStorage.getItem(URL_KEY)||'', busy=false, publicKey=null;
+  let base=localStorage.getItem(URL_KEY)===SESSION_API?SESSION_API:'', busy=false, publicKey=null;
   let cid=localStorage.getItem(CID_KEY)||crypto.randomUUID();localStorage.setItem(CID_KEY,cid);
   if(localStorage.getItem(archiveKey)&&!localStorage.getItem(ARCHIVE_CID))localStorage.setItem(ARCHIVE_CID,crypto.randomUUID());
   const panel=document.createElement('div');panel.className='memory-box';
@@ -11,8 +11,8 @@
   document.getElementById('bgUrl').value=base;
   const info=text=>document.getElementById('bgInfo').textContent=text;
   async function api(path,data,method){
-    if(!parallelPassword)throw Error('Unlock Parallel first.');
-    const res=await fetch(base+path,{method:method||(data?'POST':'GET'),headers:{authorization:'Bearer '+parallelPassword,...(data?{'content-type':'application/json'}:{})},...(data?{body:JSON.stringify(data)}:{}),cache:'no-store',signal:AbortSignal.timeout(20000)});
+    if(!parallelSession)throw Error('Unlock Parallel first.');
+    const res=await fetch(base+path,{method:method||(data?'POST':'GET'),headers:{authorization:'Bearer '+parallelSession,...(data?{'content-type':'application/json'}:{})},...(data?{body:JSON.stringify(data)}:{}),cache:'no-store',signal:AbortSignal.timeout(20000)});
     const result=await res.json();if(!res.ok)throw Error(result.error||'Background connection failed');return result;
   }
   function stamp(list,conversation){
@@ -52,7 +52,7 @@
     }
   }
   async function sync(){
-    if(!base||!parallelPassword||busy)return;busy=true;
+    if(!base||!parallelSession||busy)return;busy=true;
     try{
       const active=messages, conversation=cid;
       await upload(active,conversation,true);
@@ -75,19 +75,19 @@
     finally{busy=false;}
   }
   $('bgConnect').addEventListener('click',async()=>{
-    if(!parallelPassword){info('Unlock Parallel first.');return;}
+    if(!parallelSession){info('Unlock Parallel first.');return;}
     const entered=$('bgUrl').value.trim();
     if(aiRequestRunning){info('Wait for the current AI reply before connecting.');return;}
     const previous=base;
     try{
-      const url=new URL(entered);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash)throw Error('Use an HTTPS Worker address.');
+      const url=new URL(entered);if(url.origin!==SESSION_API||url.pathname!=='/'||url.username||url.password||url.search||url.hash)throw Error('Use your verified Parallel Worker address.');
       base=url.origin;const status=await api('/api/status');publicKey=status.publicKey;
       localStorage.setItem(URL_KEY,base);prepare();await sync();
     }catch(err){base=previous;info(err.message);}
   });
   $('bgPush').addEventListener('click',async()=>{
     try{
-      if(!base||!parallelPassword)throw Error('Connect and unlock the background service first.');
+      if(!base||!parallelSession)throw Error('Connect and unlock the background service first.');
       if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))throw Error('On iPhone, add Parallel to your Home Screen, then open it from that icon (iOS 16.4 or later).');
       // Request immediately in this user gesture, before network calls (iOS requirement).
       const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notifications are blocked. Allow Parallel in iPhone notification settings.');
@@ -109,13 +109,13 @@
     }catch(err){info(err.message);}
   });
   async function refreshSubscription(){
-    if(!base||!parallelPassword||!('serviceWorker' in navigator))return;
+    if(!base||!parallelSession||!('serviceWorker' in navigator))return;
     try{const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();if(sub)await api('/api/push',sub.toJSON());}catch{}
   }
   if(base){prepare();info('Background service configured. Unlock to sync.');}
   // Login can finish after this script loads; no new secrets are persisted.
   let hadPassword=false;
-  setInterval(()=>{if(parallelPassword&&!hadPassword){hadPassword=true;void refreshSubscription();}void sync();},30000);
+  setInterval(()=>{if(parallelSession&&!hadPassword){hadPassword=true;void refreshSubscription();}void sync();},30000);
   unlockForm.addEventListener('submit',()=>setTimeout(()=>{void sync();void refreshSubscription();},1500));
   window.addEventListener('online',()=>void sync());
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){void sync();void refreshSubscription();}});

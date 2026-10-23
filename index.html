@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#18172e"><title>Parallel · Gura</title><meta name="description" content="Parallel — a fictional character texting simulator"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Parallel"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-180.png"><link rel="icon" type="image/png" href="./icon-192.png"><style>
+<html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-PAr+ZDFvK3g8iRSPqmzFiL03qvGtfU54GyjJ5e8wLYM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://parallel-background.chloerayn.workers.dev; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><meta charset="UTF-8"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#18172e"><title>Parallel · Gura</title><meta name="description" content="Parallel — a fictional character texting simulator"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Parallel"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-180.png"><link rel="icon" type="image/png" href="./icon-192.png"><style>
 :root{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f4edff;background:#111020}*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 80% 0%,#43325b 0,transparent 35%),#111020}main{max-width:590px;margin:auto;min-height:100dvh;display:flex;flex-direction:column;padding:18px 16px 24px}.top{display:flex;align-items:center;justify-content:space-between;padding:6px 4px 18px}.brand{letter-spacing:.09em;text-transform:uppercase;font-size:12px;color:#ddc8ff}.pill{font-size:11px;background:#31304e;padding:7px 10px;border-radius:18px;color:#d6c9ed}.profile{border:1px solid #514365;background:linear-gradient(120deg,#262238,#201c32);border-radius:20px;padding:16px;display:flex;gap:12px;align-items:center}.avatar{width:44px;height:44px;border-radius:50%;background:#3c3456;display:grid;place-items:center;font-size:22px}.name{font-weight:750}.small{font-size:12px;color:#b3a7c8;margin-top:4px}.tabs{display:flex;gap:8px;margin:16px 0}.tabs button{flex:1;background:#27223a;color:#cfc4e4;border:1px solid #4c405f;border-radius:12px;padding:10px;font-weight:650;cursor:pointer}.tabs button.on{background:#6d4e91;color:white}.screen{flex:1;display:flex;flex-direction:column;min-height:350px}.chat{flex:1;display:flex;flex-direction:column;gap:12px;padding:12px 3px 22px;overflow-y:auto;max-height:55vh}.bubble{max-width:84%;padding:12px 14px;border-radius:17px;line-height:1.42;font-size:15px;white-space:pre-wrap}.bubble.them{align-self:flex-start;background:#312b43;border-bottom-left-radius:5px}.bubble.me{align-self:flex-end;background:#725299;border-bottom-right-radius:5px}.time{font-size:10px;opacity:.62;margin-top:5px}.status{font-size:12px;color:#ac9ebf;margin-bottom:9px;min-height:17px}.entry{display:flex;gap:8px}.entry input{flex:1;min-width:0;background:#2a253b;border:1px solid #5b4b72;color:white;border-radius:14px;padding:13px;font-size:16px}.entry button,.action{border:0;background:#9974cf;color:white;border-radius:14px;padding:0 16px;font-weight:bold;cursor:pointer}.world{background:#232038;border:1px solid #514365;border-radius:17px;padding:18px;line-height:1.7}.world h3{margin:0 0 8px}.note{color:#bdb0cc;font-size:12px;line-height:1.5;margin-top:12px}.action{padding:12px 16px;margin-top:12px}.hidden{display:none!important}label{display:block;margin:12px 0 6px;font-size:13px}select{background:#2a253b;border:1px solid #5b4b72;color:white;padding:10px;border-radius:10px;width:100%}
 
 .soundbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0 0}.soundbar button{background:#29263c;border:1px solid #6d5b8e;color:#e8dafb;border-radius:9px;padding:8px 10px;font-size:12px;cursor:pointer}.soundbar button:focus-visible{outline:2px solid #bba6f7}.soundbar .soundtoggle{background:#58416e}.soundbar .soundtoggle[aria-pressed="false"]{opacity:.65}.soundbar .soundlabel{font-size:11px;color:#b9acca}
 
-/* Private unlock overlay; password exists only in page memory. */
+/* Private unlock overlay; login does not encrypt local conversation storage. */
 .lock-screen{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 15%,#51376b,#111020 65%);display:flex;align-items:center;justify-content:center;padding:20px}
 .lock-card{width:min(100%,370px);padding:30px 24px;background:#231c35;border:1px solid #756092;border-radius:23px;text-align:center;box-shadow:0 18px 65px #0008}
 .lock-card h1{font-size:27px;margin:8px 0;color:#f4edff}.lock-card p{font-size:13px;color:#cbbfda;line-height:1.5}
@@ -176,7 +176,7 @@ main{background:linear-gradient(160deg,#fff9ff,#ffe8f5 55%,#eee5ff)!important;bo
 .parallel-clock-day{color:#866e89;font-size:10px}
 .parallel-clock-note{grid-column:1/-1;text-align:center;font:10px Tahoma,Arial,sans-serif;color:#826986}
 @media(max-width:360px){.parallel-clock-time{font-size:17px}.parallel-clocks{padding:7px;gap:5px}}
-</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><label class="remember-label"><input type="checkbox" id="rememberMe"> Remember me on this device</label><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Only use Remember me on your private device. It saves the login locally until you choose Forget this device.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.65;font-size:11px">/ Y2K // 1.1</span></div><div class="pill">● PRIVATE LINK</div></div><div class="buddy-list-header"><span>◈ Buddy List <small>2 contacts</small></span><span class="network-label">PARALLEL.NET / PRIVATE</span></div>
+</style></head><body><div id="parallelLock" class="lock-screen"><form id="unlockForm" class="lock-card"><div style="font-size:40px">🔐</div><h1>Parallel</h1><p>Private connection · Dr. Gurathin</p><input id="unlockPassword" type="password" autocomplete="current-password" placeholder="Your Parallel password" aria-label="Parallel password" required><label class="remember-label"><input type="checkbox" id="rememberMe"> Remember me on this device</label><button id="unlockButton" type="submit">Unlock</button><div class="lock-error" id="unlockError" role="status" aria-live="polite"></div><p>Only use Remember me on your private device. It saves an expiring device session for up to 14 days, never your password.</p></form></div><main><div class="top"><div class="brand">✦ Parallel <span style="opacity:.65;font-size:11px">/ Y2K // 1.1</span></div><div class="pill">● PRIVATE LINK</div></div><div class="buddy-list-header"><span>◈ Buddy List <small>2 contacts</small></span><span class="network-label">PARALLEL.NET / PRIVATE</span></div>
 <div class="buddy-card-main" role="group" aria-label="Your contact Dr. Gurathin">
   <div class="buddy-icon">☕</div>
   <div class="buddy-details"><div class="buddy-title"><span class="buddy-light" id="buddyLight"></span><strong>Dr. Gurathin</strong><span class="buddy-tag">01</span></div>
@@ -186,59 +186,42 @@ main{background:linear-gradient(160deg,#fff9ff,#ffe8f5 55%,#eee5ff)!important;bo
 </div><div class="soundbar" role="group" aria-label="Retro sound controls"><button type="button" id="soundToggle" class="soundtoggle" aria-pressed="true">🔊 Sounds on</button><button type="button" id="soundTest">♪ Test sounds</button><span class="soundlabel">AIM-inspired original sounds</span></div><div class="devbar"><label for="devMode"><input type="checkbox" id="devMode"> 🧪 Developer Mode: wake Gura for testing</label><span class="devhint">Normal California schedule stays unchanged when off.</span></div><div class="chat-tools"><button id="newChat" type="button">✦ New conversation</button><button id="archiveChat" type="button">↺ Restore previous</button></div><div class="tabs"><button class="on" data-tab="messages">Messages</button><button data-tab="world">Our World</button><button data-tab="visit">Visit</button></div><section class="screen" id="messages"><div class="im-titlebar"><span><span class="im-led">●</span> Instant Message — Gurathin</span><span class="im-window-controls" aria-hidden="true">─ ▣ ✕</span></div><div class="chat" id="chat" aria-live="polite"></div><div class="status" id="status"></div><div id="photoPreview" class="photo-preview hidden" aria-live="polite"></div><form class="entry" id="form"><input id="photoFile" class="photo-file" type="file" accept="image/*" aria-label="Choose a photo"><button type="button" class="photo-attach" id="attachPhoto" aria-label="Attach photo" title="Attach photo">＋</button><input id="input" autocomplete="off" aria-label="Message" placeholder="Message Gura..."><button type="button" id="emojiToggle" class="emoji-toggle" aria-expanded="false" aria-label="Open retro emoticons">☺</button><button type="submit">Send</button></form><div id="emojiPicker" class="emoji-picker hidden" aria-label="Retro emoticons"></div><div class="note">◈ Parallel IM beta · Replies arrive according to Gura’s schedule. Test quota: 100 AI requests/day on this device. Connect Background messages in Settings for replies while closed.</div></section><section class="screen hidden" id="world"><div class="world"><h3>🌎 Our World</h3><div>🔬 <strong>Gura</strong> · Fictional California</div><div id="worldActivity"></div><label for="kitloc">🐈 Your simulated location</label><select id="kitloc"><option value="University">University</option><option value="Home">Home</option><option value="Coffee shop">Coffee shop</option><option value="Airport">Airport</option><option value="Visiting Gura">Visiting Gura</option></select><p class="note">This prototype uses a location you choose, not your real GPS. Future versions can offer optional real-location sharing with an off switch.</p><div class="memory-box"><h3>🧠 Gura's Memory Notebook</h3><p class="note">Saved notes are kept on this device. Gura can use them in future AI replies, even in new conversations.</p><form id="memoryForm" class="memory-form"><input id="memoryInput" maxlength="160" placeholder="Something Gura should remember..." aria-label="Memory note" required><button type="submit">Remember</button></form><div id="memoryList" class="memory-list"></div><p class="note">This version saves only notes you choose; it doesn't automatically learn everything. Notes are sent to Gemini with your messages.</p></div></div></section><section class="screen hidden" id="visit"><div class="world"><h3>🚪 Visit Mode</h3><p>You step into a fictional scene instead of texting.</p><p id="scene">Gura is at home, finishing some work. A half-empty mug of coffee sits beside his laptop.</p><button class="action" id="visitBtn">Knock on the door</button><p class="note">Early interactive sample; full AI roleplay comes after chat integration.</p></div></section></main><script>
 const $=id=>document.getElementById(id);
 
-const WORKER_URL = "https://parallel-ai.chloerayn.workers.dev/";
-let parallelPassword = null;
+const SESSION_API='https://parallel-background.chloerayn.workers.dev';
+const WORKER_URL=SESSION_API+'/api/chat';
+let parallelSession=null;
 const REMEMBER_KEY='parallel-remembered-login-v1';
-const unlockForm = document.getElementById("unlockForm");
-const rememberedPassword=localStorage.getItem(REMEMBER_KEY);
-if(rememberedPassword){
- document.getElementById('unlockPassword').value=rememberedPassword;
- document.getElementById('rememberMe').checked=true;
+const SESSION_KEY='parallel-session-v2';
+const unlockForm=document.getElementById('unlockForm');
+// Remove only the obsolete credential. Never touch chats, notebook, archive or push.
+localStorage.removeItem(REMEMBER_KEY);
+async function sessionRequest(path,options={}){
+ const res=await fetch(SESSION_API+path,{...options,headers:{'Content-Type':'application/json',...(parallelSession?{Authorization:'Bearer '+parallelSession}:{}),...options.headers},cache:'no-store',signal:AbortSignal.timeout(20000)});
+ const body=await res.json();if(!res.ok)throw Error(res.status===401?'Login expired or incorrect password.':body.error||'Connection failed');return body;
 }
-
-unlockForm.addEventListener("submit", async event => {
-  event.preventDefault();
-  const pass = document.getElementById("unlockPassword").value;
-  const button = document.getElementById("unlockButton");
-  const error = document.getElementById("unlockError");
-  button.disabled = true;
-  error.textContent = "Checking connection...";
-  try {
-    // An empty message array passes authentication but produces a 400
-    // before calling Gemini, so this check does not use AI credits.
-    const res = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + pass
-      },
-      body: JSON.stringify({ messages: [] }),
-      cache: "no-store"
-    });
-    const result = await res.json();
-    if (res.status === 400 && result.error === "Message required") {
-      parallelPassword = pass;
-      if(document.getElementById('rememberMe').checked){
-        try{localStorage.setItem(REMEMBER_KEY,pass);}catch(_){}
-      }else{localStorage.removeItem(REMEMBER_KEY);}
-      document.getElementById("unlockPassword").value = "";
-      document.getElementById("parallelLock").remove();
-      return;
-    }
-    if(res.status===401){localStorage.removeItem(REMEMBER_KEY);document.getElementById('rememberMe').checked=false;}
-    error.textContent = res.status === 401 ? "Incorrect password." :
-      "Couldn't unlock (" + res.status + "). Check Cloudflare setup.";
-  } catch (_) {
-    error.textContent = "Connection failed. Check internet and Worker address.";
-  } finally {
-    button.disabled = false;
-  }
+function unlockWithSession(token){parallelSession=token;document.getElementById('unlockPassword').value='';document.getElementById('parallelLock')?.remove();}
+unlockForm.addEventListener('submit',async event=>{
+ event.preventDefault();const button=document.getElementById('unlockButton'),error=document.getElementById('unlockError');
+ button.disabled=true;error.textContent='Checking connection...';
+ const password=document.getElementById('unlockPassword').value;
+ // Clear the DOM input immediately. Password is sent only to the pinned login endpoint.
+ document.getElementById('unlockPassword').value='';
+ try{
+  const remember=document.getElementById('rememberMe').checked;
+  const result=await sessionRequest('/api/session',{method:'POST',body:JSON.stringify({password,remember})});
+  try{if(remember)localStorage.setItem(SESSION_KEY,JSON.stringify({token:result.token,expiresAt:result.expiresAt}));else localStorage.removeItem(SESSION_KEY);}catch(_){/* Storage unavailable: use this in-memory session only. */}
+  unlockWithSession(result.token);
+ }catch(e){error.textContent=e.message;}finally{button.disabled=false;}
 });
+(async()=>{
+ try{
+  const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+  if(!saved)return;
+  if(typeof saved.token!=='string'||!saved.token.startsWith('ps_')||saved.expiresAt<=Date.now()){localStorage.removeItem(SESSION_KEY);return;}
+  parallelSession=saved.token;
+  await sessionRequest('/api/session');unlockWithSession(saved.token);
+ }catch(e){parallelSession=null;document.getElementById('unlockError').textContent='Could not restore login. Unlock to continue.';}
+})();
 
-// Previously trusted devices can unlock automatically after rechecking the Worker.
-if(rememberedPassword) unlockForm.requestSubmit();
-
-// Original Web Audio sound design, inspired by classic desktop messengers.
 const retroSound=(()=>{
  let ctx=null;let enabled=localStorage.getItem('parallel-sounds')!=='off';
  const get=()=>{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!ctx)ctx=new AC();if(ctx.state==='suspended')ctx.resume().catch(()=>{});return ctx};
@@ -326,13 +309,13 @@ function quotaLeft(){return Math.max(0,DAILY_AI_CAP-Number(localStorage.getItem(
 function useQuota(){localStorage.setItem(quotaKey(),String(DAILY_AI_CAP-quotaLeft()+1))}
 async function aiReply(){
   if(window.parallelBackground?.enabled){window.parallelBackground.queue();return;}
-  if(aiRequestRunning||!parallelPassword)return;
+  if(aiRequestRunning||!parallelSession)return;
   if(quotaLeft()===0){$('status').textContent='Daily AI demo limit reached (100 requests).';return;}
   aiRequestRunning=true;
   $('status').textContent='Gura is typing...';
   try{
     const payload=messages.slice(-12).filter(m=>m.from==='me'||m.from==='them').map(m=>({
-      role:m.from==='me'?'user':'model',text:m.text||(m.photo?'[Kit sent a photo]':'')
+      role:m.from==='me'?'user':'model',text:(m.text||(m.photo?'[Kit sent a photo]':'')).slice(0,1500)
     }));
     if(memoryNotes.length && payload.length && payload[payload.length-1].role==='user'){
       // The Worker accepts a 1,500-character message. Preserve the actual message.
@@ -352,11 +335,12 @@ async function aiReply(){
       const context="[Live clock context captured when Kit sent this message. This is background context, not dialogue; don't quote it. Gurathin is in Berkeley, California: "+fmt('America/Los_Angeles')+". Kit is in Taiwan: "+fmt('Asia/Taipei')+". If the message is delivered later, these timestamps could be old. This does not reveal Kit's precise location.]\\n";
       latest.text=context+latest.text.slice(0,Math.max(0,1500-context.length));
     }
+    while(JSON.stringify({messages:payload}).length>12000&&payload.length>1)payload.shift();
     useQuota();
     const response=await fetch(WORKER_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+parallelPassword},
-      body:JSON.stringify({messages:payload,photo:messages.slice().reverse().find(m=>m.from==='me')?.photo||null}),
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+parallelSession},
+      body:JSON.stringify({messages:payload}),
       cache:'no-store'
     });
     const result=await response.json();
@@ -497,9 +481,10 @@ function updateParallelClocks(){
 installParallelOS();
 const forget=document.createElement('button');
 forget.type='button';forget.className='forget-device';forget.textContent='🔓 Forget this device';
-forget.addEventListener('click',()=>{
- localStorage.removeItem(REMEMBER_KEY);
- alert('Saved login removed. It will ask for your password the next time you open Parallel.');
+forget.addEventListener('click',async()=>{
+ if(parallelSession){try{await sessionRequest('/api/session',{method:'DELETE'});}catch(_){alert('Could not revoke the server session while offline. It will expire automatically.');}}
+ localStorage.removeItem(SESSION_KEY);localStorage.removeItem(REMEMBER_KEY);parallelSession=null;
+ location.reload();
 });
 document.querySelector('.os-settings #osSettingsSlot').append(forget);
 updateParallelClocks();
