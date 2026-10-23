@@ -1,19 +1,14 @@
+import { principal, sessionFor, passwordMatches, createSession, clientKey, limit, pruneAuthMetadata } from './security.js';
 import { buildPushPayload } from '@block65/webcrypto-web-push';
 import { available, dueAt, nextAvailable } from './schedule.js';
 const sql = (env, query, ...args) => env.DB.prepare(query).bind(...args);
 const validId = v => typeof v === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(v);
 const origins = env => (env.ALLOWED_ORIGINS || '').split(',').map(s=>s.trim());
-async function authorized(req, env) {
-  if (!env.APP_PASSWORD) return false;
-  const hash = s => crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  const [a,b] = await Promise.all([hash((req.headers.get('authorization')||'').replace(/^Bearer /i,'')),hash(env.APP_PASSWORD)]);
-  return crypto.subtle.timingSafeEqual(a,b);
-}
-async function readBody(req) {
+async function readBody(req,maxSize=380000) {
   const reader=req.body?.getReader(); if(!reader) throw Error('Invalid body');
   let size=0; const chunks=[];
   while(true) { const {done,value}=await reader.read(); if(done)break;
-    size+=value.length; if(size>380000){await reader.cancel();throw Error('Request too large');} chunks.push(value); }
+    size+=value.length; if(size>maxSize){await reader.cancel();throw Error('Request too large');} chunks.push(value); }
   const bytes=new Uint8Array(size);let offset=0;
   for(const c of chunks){bytes.set(c,offset);offset+=c.length;}
   return JSON.parse(new TextDecoder().decode(bytes));
@@ -120,12 +115,45 @@ export async function processPush(env){
 export default {
   async fetch(req,env){
     const origin=req.headers.get('origin');
-    const respond=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json','cache-control':'no-store','vary':'Origin',...(origins(env).includes(origin)?{'access-control-allow-origin':origin}:{}),'access-control-allow-headers':'authorization,content-type','access-control-allow-methods':'GET,POST,DELETE,OPTIONS'}});
+    const respond=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer','vary':'Origin',...(origins(env).includes(origin)?{'access-control-allow-origin':origin}:{}),'access-control-allow-headers':'authorization,content-type','access-control-allow-methods':'GET,POST,DELETE,OPTIONS'}});
     if(origin&&!origins(env).includes(origin))return respond({error:'Origin not allowed'},403);
     if(req.method==='OPTIONS')return respond({ok:true});
-    if(!await authorized(req,env))return respond({error:'Unauthorized'},401);
     const url=new URL(req.url),path=url.pathname;
     try{
+      if(path==='/api/session'&&req.method==='POST'){
+        if(!origin||!origins(env).includes(origin))return respond({error:'Origin not allowed'},403);
+        const ip=await clientKey(req,env);
+        if(!await limit(env,'login:'+ip,10,900000))return respond({error:'Too many login attempts. Try again in 15 minutes.'},429);
+        const body=await readBody(req,4096);
+        if(!await passwordMatches(body.password,env.APP_PASSWORD))return respond({error:'Unauthorized'},401);
+        return respond(await createSession(env,body.remember===true),201);
+      }
+      if(!await principal(req,env))return respond({error:'Unauthorized'},401);
+      if(!await limit(env,'owner:requests',240,60000))return respond({error:'Too many requests. Try again shortly.'},429);
+      if(path==='/api/session'&&['GET','DELETE'].includes(req.method)){
+        const session=await sessionFor(req,env);
+        if(!session)return respond({error:'Session required'},401);
+        if(req.method==='DELETE')await sql(env,'UPDATE security_sessions SET revoked_at=? WHERE token_hash=?',Date.now(),session.token_hash).run();
+        return respond({ok:true,expiresAt:session.expires_at});
+      }
+      if(['/api/messages','/api/history','/api/jobs/retry','/api/push'].includes(path)&&req.method!=='GET'){
+        if(!await limit(env,'owner:writes',120,60000))return respond({error:'Too many writes. Try again shortly.'},429);
+      }
+      if(path==='/api/chat'&&req.method==='POST'){
+        if(!await limit(env,'owner:chat',10,60000))return respond({error:'AI request limit reached. Try again shortly.'},429);
+        const body=await readBody(req,16000);
+        if(!Array.isArray(body.messages)||!body.messages.length||body.messages.at(-1)?.role!=='user'||body.messages.length>12||body.messages.some(m=>!['user','model'].includes(m.role)||typeof m.text!=='string'||m.text.length>1500))return respond({error:'Invalid messages'},400);
+        const payload=JSON.stringify({messages:body.messages});if(payload.length>12000)return respond({error:'Request too large'},400);
+        const day=new Date().toISOString().slice(0,10);
+        await sql(env,'INSERT OR IGNORE INTO bg_daily_usage(day) VALUES (?)',day).run();
+        const quota=await sql(env,'UPDATE bg_daily_usage SET attempts=attempts+1 WHERE day=? AND attempts<100',day).run();
+        if(!quota.meta.changes)return respond({error:'Daily AI request limit reached'},429);
+        const upstream=new Request(env.AI_WORKER_URL,{method:'POST',headers:{'content-type':'application/json',origin:env.AI_WORKER_ORIGIN,authorization:'Bearer '+env.AI_WORKER_PASSWORD},body:payload,signal:AbortSignal.timeout(90000)});
+        const response=await env.AI.fetch(upstream);
+        if(!response.ok)return respond({error:'AI unavailable'},502);
+        const out=await response.json();if(typeof out.reply!=='string')return respond({error:'AI unavailable'},502);
+        return respond({reply:out.reply});
+      }
       if(path==='/api/status'&&req.method==='GET'){
         const jobs=await sql(env,'SELECT state,COUNT(*) AS count FROM bg_jobs GROUP BY state').all();
         return respond({ok:true,background:true,jobs:jobs.results,publicKey:env.VAPID_PUBLIC_KEY||null});
@@ -160,5 +188,5 @@ export default {
       return respond({error:'Not found'},404);
     }catch(error){const invalid=/Invalid|Message required|too large/.test(error.message);return respond({error:invalid?error.message:'Background service unavailable'},invalid?400:503);}
   },
-  async scheduled(_event,env,ctx){ctx.waitUntil(processPending(env));}
+  async scheduled(_event,env,ctx){ctx.waitUntil(processPending(env));ctx.waitUntil(pruneAuthMetadata(env));}
 };
