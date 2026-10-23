@@ -7,7 +7,7 @@ import worker,{processPending} from '../src/worker.js';
 import {pruneAuthMetadata} from '../src/security.js';
 function setup(){
  const db=new DatabaseSync(':memory:');
- for(const name of ['0001_background.sql','0002_security.sql'])db.exec(readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8'));
+ for(const name of ['0001_background.sql','0002_security.sql','0003_life.sql'])db.exec(readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8'));
  const DB={prepare(q){return {bind(...a){return {async first(){return db.prepare(q).get(...a)||null;},async all(){return {results:db.prepare(q).all(...a)};},async run(){const r=db.prepare(q).run(...a);return {meta:{changes:Number(r.changes)}};}};}};},async batch(queries){db.exec('BEGIN');try{const out=[];for(const q of queries)out.push(await q.run());db.exec('COMMIT');return out;}catch(e){db.exec('ROLLBACK');throw e;}}};
  let upstream=0;
  const env={DB,APP_PASSWORD:'fixture-password',ENABLE_LEGACY_PASSWORD_AUTH:'false',ALLOWED_ORIGINS:'https://parallel.test',AI_WORKER_URL:'https://ai.test/',AI_WORKER_ORIGIN:'https://parallel.test',AI_WORKER_PASSWORD:'fixture-upstream',AI:{async fetch(req){upstream++;assert.equal(req.headers.get('Authorization'),'Bearer fixture-upstream');return Response.json({reply:'Preserved character'});}}};

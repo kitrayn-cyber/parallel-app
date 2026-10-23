@@ -11,7 +11,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/background.test.js test/security.test.js",
+    "test": "node --test test/background.test.js test/security.test.js test/life.test.js",
     "check": "node --check src/worker.js && node --check ../background-client.js && node --check ../sw.js",
     "build": "wrangler deploy --dry-run --outdir dist",
     "types": "wrangler types",

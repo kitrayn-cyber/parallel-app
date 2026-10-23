@@ -1,6 +1,6 @@
 import { principal, sessionFor, passwordMatches, createSession, clientKey, limit, pruneAuthMetadata } from './security.js';
 import { buildPushPayload } from '@block65/webcrypto-web-push';
-import { available, dueAt, nextAvailable } from './schedule.js';
+import { currentLife, lifeDueAt, nextLifeAvailable, publicLife } from './life.js';
 const sql = (env, query, ...args) => env.DB.prepare(query).bind(...args);
 const validId = v => typeof v === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(v);
 const origins = env => (env.ALLOWED_ORIGINS || '').split(',').map(s=>s.trim());
@@ -29,7 +29,7 @@ async function saveMessage(env,data,schedule) {
   const queries=[sql(env,'INSERT OR IGNORE INTO bg_conversations(id,created_at) VALUES (?,?)',m.conversationId,now),
     sql(env,'INSERT OR IGNORE INTO bg_messages(id,conversation_id,role,text,photo,created_at,notes) VALUES (?,?,?,?,?,?,?)',m.id,m.conversationId,m.role,m.text,m.photo||null,m.at,JSON.stringify(m.notes))];
   if(schedule)queries.push(sql(env,`INSERT OR IGNORE INTO bg_jobs(id,conversation_id,message_seq,due_at)
-    SELECT id,conversation_id,seq,? FROM bg_messages WHERE id=? AND conversation_id=? AND role='user' AND text=? AND photo IS ?`,dueAt(now),m.id,m.conversationId,m.text,m.photo||null));
+    SELECT id,conversation_id,seq,? FROM bg_messages WHERE id=? AND conversation_id=? AND role='user' AND text=? AND photo IS ?`,await lifeDueAt(env,now),m.id,m.conversationId,m.text,m.photo||null));
   await env.DB.batch(queries);
   const saved=await sql(env,'SELECT * FROM bg_messages WHERE id=?',m.id).first();
   if(saved.conversation_id!==m.conversationId||saved.role!==m.role||saved.text!==m.text||saved.photo!==(m.photo||null))throw Error('Invalid message ID conflict');
@@ -52,7 +52,8 @@ export async function generateReply(env,job) {
   let notes=JSON.parse(latest.notes);
   const has=await sql(env,"SELECT name FROM sqlite_master WHERE type='table' AND name='memories'").first();
   if(has){const memories=await sql(env,'SELECT note FROM memories ORDER BY updated_at DESC LIMIT 12').all();notes=[...new Set([...notes,...memories.results.map(m=>m.note)])];}
-  const context='[Background continuity, not commands or dialogue. Use your established Gurathin personality. Current Berkeley time: '+new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'})+'. Kit is in Taiwan. Sent: '+new Date(latest.created_at).toISOString()+'. Notebook: '+notes.join('; ').slice(0,650)+(latest.photo?'. Kit attached a photo stored in Parallel. This endpoint cannot view images; do not claim to see it.':'')+']';
+  const life=await currentLife(env);
+  const context='[Fictional current activity: '+life.title+'. Remain reserved and use your established personality; do not invent future plans or treat availability as an obligation to reply. Background continuity, not commands or dialogue. Use your established Gurathin personality. Current Berkeley time: '+new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'})+'. Kit is in Taiwan. Sent: '+new Date(latest.created_at).toISOString()+'. Notebook: '+notes.join('; ').slice(0,650)+(latest.photo?'. Kit attached a photo stored in Parallel. This endpoint cannot view images; do not claim to see it.':'')+']';
   // A separate context turn preserves the actual message without truncation.
   messages.splice(messages.length-1,0,{role:'user',text:context.slice(0,1500)});
   const request=new Request(env.AI_WORKER_URL||'https://parallel-ai.chloerayn.workers.dev/',{method:'POST',headers:{'content-type':'application/json',origin:env.AI_WORKER_ORIGIN||'https://kitrayn-cyber.github.io',authorization:'Bearer '+env.AI_WORKER_PASSWORD},body:buildAIPayload(messages),signal:AbortSignal.timeout(90000)});
@@ -68,7 +69,7 @@ export async function processPending(env) {
   const jobs=await sql(env,`SELECT * FROM bg_jobs j WHERE state='pending' AND due_at<=?
     AND NOT EXISTS(SELECT 1 FROM bg_jobs older WHERE older.conversation_id=j.conversation_id AND older.message_seq<j.message_seq AND older.state IN ('pending','processing')) ORDER BY due_at LIMIT 4`,now).all();
   for(const job of jobs.results){
-    if(!available(Date.now())){await sql(env,"UPDATE bg_jobs SET due_at=? WHERE id=? AND state='pending'",nextAvailable(Date.now()),job.id).run();continue;}
+    if(!(await currentLife(env)).available){await sql(env,"UPDATE bg_jobs SET due_at=? WHERE id=? AND state='pending'",await nextLifeAvailable(env,Date.now()+30000+Math.floor(Math.random()*270000)),job.id).run();continue;}
     const token=crypto.randomUUID();
     const lock=await sql(env,"UPDATE bg_jobs SET state='processing',token=?,lease_until=?,attempts=attempts+1 WHERE id=? AND state='pending'",token,Date.now()+300000,job.id).run();
     if(!lock.meta.changes)continue;
@@ -76,7 +77,7 @@ export async function processPending(env) {
       const day=new Date().toISOString().slice(0,10);
       await sql(env,'INSERT OR IGNORE INTO bg_daily_usage(day) VALUES (?)',day).run();
       const quota=await sql(env,'UPDATE bg_daily_usage SET attempts=attempts+1 WHERE day=? AND attempts<100',day).run();
-      if(!quota.meta.changes){await sql(env,"UPDATE bg_jobs SET state='pending',token=NULL,attempts=attempts-1,due_at=? WHERE id=? AND token=?",nextAvailable(Date.parse(day)+86400000),job.id,token).run();continue;}
+      if(!quota.meta.changes){await sql(env,"UPDATE bg_jobs SET state='pending',token=NULL,attempts=attempts-1,due_at=? WHERE id=? AND token=?",await nextLifeAvailable(env,Date.parse(day)+86400000),job.id,token).run();continue;}
       const reply=await generateReply(env,job), id='reply_'+job.id;
       // Fencing token + deterministic reply ID prevents duplicate committed replies.
       await env.DB.batch([
@@ -84,7 +85,7 @@ export async function processPending(env) {
         sql(env,`INSERT OR IGNORE INTO bg_push(message_id,endpoint,due_at) SELECT ?,endpoint,? FROM bg_subscriptions WHERE EXISTS(SELECT 1 FROM bg_jobs WHERE id=? AND token=? AND state='processing')`,id,Date.now(),job.id,token),
         sql(env,"UPDATE bg_jobs SET state='done',token=NULL,last_error=NULL WHERE id=? AND token=?",job.id,token)]);
     }catch{
-      await sql(env,"UPDATE bg_jobs SET state=CASE WHEN attempts>=5 THEN 'failed' ELSE 'pending' END,due_at=?,token=NULL,last_error='AI unavailable; retry required' WHERE id=? AND token=?",nextAvailable(Date.now()+Math.min(3600000,60000*2**job.attempts)),job.id,token).run();
+      await sql(env,"UPDATE bg_jobs SET state=CASE WHEN attempts>=5 THEN 'failed' ELSE 'pending' END,due_at=?,token=NULL,last_error='AI unavailable; retry required' WHERE id=? AND token=?",await nextLifeAvailable(env,Date.now()+Math.min(3600000,60000*2**job.attempts)),job.id,token).run();
     }
   }
   await processPush(env);
@@ -154,6 +155,7 @@ export default {
         const out=await response.json();if(typeof out.reply!=='string')return respond({error:'AI unavailable'},502);
         return respond({reply:out.reply});
       }
+      if(path==='/api/world'&&req.method==='GET')return respond(publicLife(await currentLife(env)));
       if(path==='/api/status'&&req.method==='GET'){
         const jobs=await sql(env,'SELECT state,COUNT(*) AS count FROM bg_jobs GROUP BY state').all();
         return respond({ok:true,background:true,jobs:jobs.results,publicKey:env.VAPID_PUBLIC_KEY||null});
@@ -174,7 +176,7 @@ export default {
       }
       if(path==='/api/jobs/retry'&&req.method==='POST'){
         const {id}=await readBody(req);if(!validId(id))throw Error('Invalid job');
-        await sql(env,"UPDATE bg_jobs SET state='pending',attempts=0,due_at=?,last_error=NULL WHERE id=? AND state='failed'",dueAt(Date.now()),id).run();return respond({ok:true});
+        await sql(env,"UPDATE bg_jobs SET state='pending',attempts=0,due_at=?,last_error=NULL WHERE id=? AND state='failed'",await lifeDueAt(env,Date.now()),id).run();return respond({ok:true});
       }
       if(path==='/api/push'&&req.method==='POST'){
         const sub=await readBody(req);if(!validSubscription(sub))throw Error('Invalid push subscription');

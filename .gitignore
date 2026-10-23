@@ -4,3 +4,5 @@ background/.dev.vars*
 background/dist/
 *.local
 /dist/
+
+/background/node_modules
