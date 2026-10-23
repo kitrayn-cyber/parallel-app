@@ -1,0 +1,6 @@
+background/node_modules/
+.wrangler/
+background/.dev.vars*
+background/dist/
+*.local
+/dist/

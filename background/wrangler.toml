@@ -1,12 +1,26 @@
 name = "parallel-background"
 main = "src/worker.js"
 compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
 
-# Replace DATABASE_ID after creating a D1 database in Cloudflare.
+[vars]
+ALLOWED_ORIGINS = "https://kitrayn-cyber.github.io"
+AI_WORKER_URL = "https://parallel-ai.chloerayn.workers.dev/"
+# Add public VAPID key and mailto contact here only after key generation.
+
 [[d1_databases]]
 binding = "DB"
-database_name = "parallel-messages"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_name = "parallel-memory"
+# Deliberately unresolved until read-only live schema/binding verification succeeds.
+database_id = "REPLACE_AFTER_VERIFYING_PARALLEL_MEMORY"
+migrations_dir = "migrations"
+
+[[services]]
+binding = "AI"
+service = "parallel-ai"
 
 [triggers]
 crons = ["* * * * *"]
+
+[observability]
+enabled = true

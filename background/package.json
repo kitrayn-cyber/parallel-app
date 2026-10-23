@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "@block65/webcrypto-web-push": "^2.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261022.1",
+    "miniflare": "^4.20260730.0",
+    "wrangler": "^4.151.3"
+  },
+  "name": "parallel-background",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/background.test.js",
+    "check": "node --check src/worker.js && node --check ../background-client.js && node --check ../sw.js",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "types": "wrangler types",
+    "test:runtime": "node --test test/runtime.test.js"
+  }
+}
