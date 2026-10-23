@@ -13,6 +13,7 @@ const assert=require('node:assert/strict');
   else if(url.pathname==='/api/session'&&req.method()==='POST'){const d=req.postDataJSON();assert.equal(d.password,'FAKE_TEST_PASSWORD');body={token:'ps_'+'a'.repeat(43),expiresAt:Date.now()+86400000};status=201;}
   else{assert.equal(req.headers()['authorization'],'Bearer ps_'+'a'.repeat(43));
    if(url.pathname==='/api/session'&&req.method()==='DELETE')revoked=true;
+   else if(url.pathname==='/api/world')body={title:'Focused research · Berkeley',available:false,location:'Berkeley, California',fictional:true};
    else if(url.pathname==='/api/status')body={background:true,publicKey:null};
    else if(url.pathname==='/api/chat')body={reply:'Mock foreground reply'};
    else if(req.method()==='POST'){const d=req.postDataJSON();if(!stored.some(m=>m.id===d.id))stored.push({...d,seq:stored.length+1,created_at:d.at||Date.now()});}
@@ -26,6 +27,7 @@ const assert=require('node:assert/strict');
  await page.fill('#unlockPassword','FAKE_TEST_PASSWORD');await page.check('#rememberMe');await page.click('#unlockButton');await page.locator('#parallelLock').waitFor({state:'detached'});
  assert.ok(!(await page.evaluate(()=>localStorage.getItem('parallel-session-v2'))).includes('PASSWORD'));
  await page.evaluate(()=>aiReply());assert.ok(await page.evaluate(()=>messages.some(m=>m.text==='Mock foreground reply')));
+ await page.waitForFunction(()=>document.getElementById('worldActivity').textContent.includes('Focused research'));
  const before=calls.length;await page.evaluate(()=>{document.getElementById('bgUrl').value='https://evil.test';document.getElementById('bgConnect').click();});await page.waitForTimeout(100);assert.equal(calls.length,before);
  await page.evaluate(()=>{document.getElementById('bgUrl').value=SESSION_API;document.getElementById('bgConnect').click();});await page.waitForTimeout(400);assert.ok(stored.some(m=>m.text==='Existing conversation'));
  // Remembered login is rechecked on reopen; chats remain.
