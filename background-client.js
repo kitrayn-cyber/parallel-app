@@ -12,7 +12,7 @@
   const info=text=>document.getElementById('bgInfo').textContent=text;
   async function api(path,data,method){
     if(!parallelSession)throw Error('Unlock Parallel first.');
-    const res=await fetch(base+path,{method:method||(data?'POST':'GET'),headers:{authorization:'Bearer '+parallelSession,...(data?{'content-type':'application/json'}:{})},...(data?{body:JSON.stringify(data)}:{}),cache:'no-store',signal:AbortSignal.timeout(20000)});
+    const res=await fetch((base||SESSION_API)+path,{method:method||(data?'POST':'GET'),headers:{authorization:'Bearer '+parallelSession,...(data?{'content-type':'application/json'}:{})},...(data?{body:JSON.stringify(data)}:{}),cache:'no-store',signal:AbortSignal.timeout(20000)});
     const result=await res.json();if(!res.ok)throw Error(result.error||'Background connection failed');return result;
   }
   function stamp(list,conversation){
@@ -51,9 +51,15 @@
       m.bgSynced=true;if(queued)m.bgQueued=true;persist(list,active);
     }
   }
+  async function refreshLife(){
+    if(!parallelSession)return;
+    try{const s=await api('/api/world');window.parallelLife={...s,fetchedAt:Date.now()};update();}
+    catch{window.parallelLife=null;update();}
+  }
   async function sync(){
     if(!base||!parallelSession||busy)return;busy=true;
     try{
+      await refreshLife();
       const active=messages, conversation=cid;
       await upload(active,conversation,true);
       const archived=JSON.parse(localStorage.getItem(archiveKey)||'[]');
@@ -115,8 +121,8 @@
   if(base){prepare();info('Background service configured. Unlock to sync.');}
   // Login can finish after this script loads; no new secrets are persisted.
   let hadPassword=false;
-  setInterval(()=>{if(parallelSession&&!hadPassword){hadPassword=true;void refreshSubscription();}void sync();},30000);
-  unlockForm.addEventListener('submit',()=>setTimeout(()=>{void sync();void refreshSubscription();},1500));
+  setInterval(()=>{if(parallelSession&&!hadPassword){hadPassword=true;void refreshSubscription();}void sync();if(!base)void refreshLife();},30000);
+  unlockForm.addEventListener('submit',()=>setTimeout(()=>{void sync();void refreshLife();void refreshSubscription();},1500));
   window.addEventListener('online',()=>void sync());
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){void sync();void refreshSubscription();}});
   navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='parallel-reply')void sync();});
@@ -128,5 +134,5 @@
       localStorage.setItem(archiveKey,JSON.stringify(messages));bridge.restoreConversation();messages=old;render();
     }else info('A reply arrived in another conversation. Use Restore previous to open your saved chat.');
   }
-  void sync();
+  void sync();void refreshLife();
 })();
