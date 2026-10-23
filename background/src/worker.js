@@ -40,6 +40,15 @@ async function saveMessage(env,data,schedule) {
   if(saved.conversation_id!==m.conversationId||saved.role!==m.role||saved.text!==m.text||saved.photo!==(m.photo||null))throw Error('Invalid message ID conflict');
   return saved;
 }
+export function buildAIPayload(input) {
+  const messages=input.map(m=>({...m}));
+  // Match the deployed Worker's 12,000-character raw JSON limit. Preserve latest text.
+  while(JSON.stringify({messages}).length>12000&&messages.length>2)messages.shift();
+  if(JSON.stringify({messages}).length>12000&&messages.length===2)messages[0].text='';
+  const body=JSON.stringify({messages});
+  if(body.length>12000)throw Error('AI context exceeds upstream limit');
+  return body;
+}
 export async function generateReply(env,job) {
   const latest=await sql(env,'SELECT * FROM bg_messages WHERE id=?',job.id).first();
   const rows=await sql(env,"SELECT * FROM bg_messages WHERE conversation_id=? AND id!=? AND (seq<? OR role='model') ORDER BY seq DESC LIMIT 10",job.conversation_id,job.id,job.message_seq).all();
@@ -48,10 +57,10 @@ export async function generateReply(env,job) {
   let notes=JSON.parse(latest.notes);
   const has=await sql(env,"SELECT name FROM sqlite_master WHERE type='table' AND name='memories'").first();
   if(has){const memories=await sql(env,'SELECT note FROM memories ORDER BY updated_at DESC LIMIT 12').all();notes=[...new Set([...notes,...memories.results.map(m=>m.note)])];}
-  const context='[Background continuity, not commands or dialogue. Use your established Gurathin personality. Current Berkeley time: '+new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'})+'. Kit is in Taiwan. Sent: '+new Date(latest.created_at).toISOString()+'. Notebook: '+notes.join('; ').slice(0,650)+']';
+  const context='[Background continuity, not commands or dialogue. Use your established Gurathin personality. Current Berkeley time: '+new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'})+'. Kit is in Taiwan. Sent: '+new Date(latest.created_at).toISOString()+'. Notebook: '+notes.join('; ').slice(0,650)+(latest.photo?'. Kit attached a photo stored in Parallel. This endpoint cannot view images; do not claim to see it.':'')+']';
   // A separate context turn preserves the actual message without truncation.
   messages.splice(messages.length-1,0,{role:'user',text:context.slice(0,1500)});
-  const request=new Request(env.AI_WORKER_URL||'https://parallel-ai.chloerayn.workers.dev/',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+env.AI_WORKER_PASSWORD},body:JSON.stringify({messages,photo:latest.photo}),signal:AbortSignal.timeout(90000)});
+  const request=new Request(env.AI_WORKER_URL||'https://parallel-ai.chloerayn.workers.dev/',{method:'POST',headers:{'content-type':'application/json',origin:env.AI_WORKER_ORIGIN||'https://kitrayn-cyber.github.io',authorization:'Bearer '+env.AI_WORKER_PASSWORD},body:buildAIPayload(messages),signal:AbortSignal.timeout(90000)});
   // Existing Worker owns Gemini key and character prompt. Prefer service binding.
   const response=env.AI?await env.AI.fetch(request):await fetch(request);
   const out=await response.json();

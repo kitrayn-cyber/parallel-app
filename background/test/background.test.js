@@ -71,9 +71,9 @@ test('push endpoint validation prevents arbitrary fetch targets',()=>{
 });
 test('additive migration preserves pre-existing conversations and memory',()=>{
   const db=new DatabaseSync(':memory:');db.exec(readFileSync(new URL('../../database/schema.sql',import.meta.url),'utf8'));
-  db.exec("INSERT INTO memories(id,note) VALUES ('memory','Do not erase'); INSERT INTO conversations(id) VALUES ('existing');");
+  db.exec("INSERT INTO memories(id,note) VALUES ('memory','Do not erase'); INSERT INTO conversations(id) VALUES ('existing'); INSERT INTO messages(id,conversation_id,sender,body) VALUES ('prior','existing','kit','Preserved prior message');");
   db.exec(migration);db.exec(migration);
-  assert.equal(db.prepare('SELECT note FROM memories').get().note,'Do not erase');assert.equal(db.prepare('SELECT id FROM conversations').get().id,'existing');
+  assert.equal(db.prepare('SELECT note FROM memories').get().note,'Do not erase');assert.equal(db.prepare('SELECT id FROM conversations').get().id,'existing');assert.equal(db.prepare('SELECT body FROM messages').get().body,'Preserved prior message');
 });
 test('push is encrypted, persisted before send, and retried independently',async()=>{
   const {db,env,request}=setup();
@@ -92,4 +92,22 @@ test('push is encrypted, persisted before send, and retried independently',async
     assert.equal(db.prepare('SELECT state FROM bg_push').get().state,'done');assert.equal(sends,2);
     assert.equal(db.prepare("SELECT COUNT(*) AS n FROM bg_messages WHERE role='model'").get().n,1);
   }finally{globalThis.fetch=original;}
+});
+test('live AI contract: Origin, raw JSON limit, latest message and photo storage',async()=>{
+  const {db,env,request}=setup();
+  const photo='data:image/jpeg;base64,'+Buffer.alloc(10000,1).toString('base64');
+  for(let i=0;i<10;i++)await request('/api/history',{...msg('history'+i),role:i%2?'model':'user',text:'x'.repeat(1500)});
+  const latest='Latest user message '+ 'y'.repeat(1400);
+  await request('/api/messages',{...msg(),text:latest,photo});
+  env.AI.fetch=async req=>{
+    assert.equal(req.headers.get('origin'),'https://kitrayn-cyber.github.io');
+    const raw=await req.text();assert.ok(raw.length<=12000);
+    const data=JSON.parse(raw);assert.equal(data.photo,undefined);
+    assert.equal(data.messages.at(-1).text,latest);assert.ok(data.messages.length<=12);
+    assert.ok(data.messages.some(m=>m.text.includes('cannot view images')));
+    return Response.json({reply:'Text reply'});
+  };
+  db.exec('UPDATE bg_jobs SET due_at=0');await eligible(()=>processPending(env));
+  assert.equal(db.prepare('SELECT state FROM bg_jobs').get().state,'done');
+  assert.equal(db.prepare("SELECT photo FROM bg_messages WHERE id='one'").get().photo,photo);
 });
