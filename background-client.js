@@ -4,6 +4,9 @@
   const ARCHIVE_CID='parallel-archive-conversation-id-v1';
   let base=localStorage.getItem(URL_KEY)===SESSION_API?SESSION_API:'', busy=false, publicKey=null;
   let cid=localStorage.getItem(CID_KEY)||crypto.randomUUID();localStorage.setItem(CID_KEY,cid);
+  const ROUTE_CHATS='parallel-notification-conversations-v1';
+  let routeTarget=new URL(location.href).searchParams.get('conversation'),routing=false;
+  const validTarget=id=>typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id);
   if(localStorage.getItem(archiveKey)&&!localStorage.getItem(ARCHIVE_CID))localStorage.setItem(ARCHIVE_CID,crypto.randomUUID());
   const panel=document.createElement('div');panel.className='memory-box';
   panel.innerHTML='<h3>Background messages</h3><p class="note">Sync this conversation and notebook to your private Worker so Gura can reply while Parallel is closed. Photos stay saved in chat; the current AI service reads text only.</p><label for="bgUrl">Background Worker address</label><div class="memory-form"><input id="bgUrl" type="url" placeholder="https://parallel-background.chloerayn.workers.dev" aria-label="Background Worker address"><button type="button" id="bgConnect">Connect background service</button></div> <button type="button" class="action" id="bgPush">Enable notifications</button> <button type="button" class="action" id="bgUnpush">Disable notifications</button> <button type="button" class="action" id="bgRetry">Retry failed replies</button><p class="note" id="bgInfo" aria-live="polite"></p>';
@@ -52,7 +55,9 @@
     }
   }
   async function sync(){
-    if(!base||!parallelSession||busy)return;busy=true;
+    if(!base||!parallelSession||busy)return;
+    if(routeTarget){await openNotificationConversation();if(routeTarget)return;}
+    busy=true;
     try{
       const active=messages, conversation=cid;
       await upload(active,conversation,true);
@@ -119,14 +124,46 @@
   unlockForm.addEventListener('submit',()=>setTimeout(()=>{void sync();void refreshSubscription();},1500));
   window.addEventListener('online',()=>void sync());
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){void sync();void refreshSubscription();}});
-  navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='parallel-reply')void sync();});
-  // Clicking a notification opens the right stored conversation without erasing the current one.
-  const target=new URL(location.href).searchParams.get('conversation');
-  if(base&&target&&target!==cid){
-    const old=JSON.parse(localStorage.getItem(archiveKey)||'[]');
-    if(localStorage.getItem(ARCHIVE_CID)===target&&Array.isArray(old)){
-      localStorage.setItem(archiveKey,JSON.stringify(messages));bridge.restoreConversation();messages=old;render();
-    }else info('A reply arrived in another conversation. Use Restore previous to open your saved chat.');
+  async function openNotificationConversation(){
+    if(!validTarget(routeTarget)){routeTarget=null;return;}
+    $('openBuddyChat').click();
+    if(routing||busy)return;
+    if(routeTarget===cid){routeTarget=null;return;}
+    if(!base||!parallelSession)return; // Keep intent while the user unlocks.
+    routing=true;const target=routeTarget;
+    try{
+      // Finish saving any outgoing message before moving its chat out of view.
+      await upload(messages,cid,true);
+      const saved=JSON.parse(localStorage.getItem(ROUTE_CHATS)||'{}');
+      let next;
+      const archived=JSON.parse(localStorage.getItem(archiveKey)||'[]');
+      if(target===localStorage.getItem(ARCHIVE_CID)&&Array.isArray(archived))next=archived;
+      else if(Array.isArray(saved[target]))next=saved[target];
+      else{
+        next=[];let after=0;
+        while(true){
+          const result=await api('/api/messages?conversationId='+encodeURIComponent(target)+'&after='+after);
+          for(const m of result.messages){after=Math.max(after,m.seq);if(!next.some(x=>x.bgId===m.id))next.push({from:m.role==='user'?'me':'them',text:m.text,photo:m.photo||undefined,at:m.created_at,bgId:m.id,bgCid:target,bgSynced:true});}
+          if(result.messages.length<100)break;
+        }
+        if(!next.length)throw Error('This conversation is not available yet. Your current chat is kept.');
+      }
+      // Save the displaced chat before changing pointers; leave the archive intact.
+      stamp(messages,cid);saved[cid]=messages;
+      localStorage.setItem(ROUTE_CHATS,JSON.stringify(saved));
+      if(target===localStorage.getItem(ARCHIVE_CID)){
+        localStorage.setItem(archiveKey,JSON.stringify(messages));localStorage.setItem(ARCHIVE_CID,cid);
+      }
+      messages=next;cid=target;localStorage.setItem(CID_KEY,cid);save();render();
+      if(routeTarget===target)routeTarget=null;
+    }catch(err){info(err.message);}
+    finally{routing=false;}
   }
+  navigator.serviceWorker?.addEventListener('message',e=>{
+    if(e.data?.type==='parallel-open-conversation'&&validTarget(e.data.conversationId)){
+      routeTarget=e.data.conversationId;void openNotificationConversation().then(()=>sync());
+    }else if(e.data?.type==='parallel-reply')void sync();
+  });
+  if(validTarget(routeTarget))void openNotificationConversation();else routeTarget=null;
   void sync();
 })();

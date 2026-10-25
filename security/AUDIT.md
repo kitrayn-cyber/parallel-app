@@ -60,3 +60,12 @@ After separate approval:
 - [Cloudflare Workers best practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/)
 
 Validation results and remaining device/browser checks are in `VALIDATION.md`.
+
+## Push delivery acceptance — October 24, 2026 (Asia/Taipei)
+
+**PASS — delivery confirmed on a physical iPhone installed Home Screen PWA.** The approved single controlled test received HTTP 201 from Apple at 00:00:15 Taiwan time. Worker version: `9925a734-ca17-4468-bcb8-071d72aa63f2`. The user confirmed that the notification appeared on the lock screen and tapping it successfully opened Parallel. This combines provider acceptance evidence with user-observed device delivery; no subscription replacement was required.
+
+**Separate issue — notification navigation.** Tapping opened Buddies instead of Gura's conversation. The existing service worker supplied a conversation query parameter, but app startup selected Buddies; route handling only supported the active or immediately archived chat. The local candidate explicitly selects Messages, routes an existing window by service-worker message, serializes notification clicks to avoid duplicate window creation, and retrieves other server conversations with authenticated reads. It retains pending routing intent through unlock, deduplicates message IDs, and saves displaced local conversations under `parallel-notification-conversations-v1` without clearing the notebook, session or subscription. The client asset URL is versioned to avoid the previous mixed-cache problem. Manifest identity, start URL, scope and service-worker registration path remain unchanged.
+
+**Local navigation validation PASS; production/device navigation acceptance PENDING.** Two automated navigation suites passed: service-worker event simulation for running/cold/concurrent clicks and an isolated Chrome browser with all network intercepted and fake session/data. Cases include active/archived/server-only chats, cold launch, warm switching, repeated taps, deferred unlock routing, invalid IDs, message deduplication and storage preservation. Existing 16 unit/compatibility tests and script syntax checks also pass. No production requests, new notifications, subscription changes or deployments occurred for this navigation work. Installed iPhone behavior must still be verified after separately approved publication; Chrome simulation is not a substitute for that check.
+

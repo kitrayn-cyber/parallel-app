@@ -33,17 +33,20 @@ self.addEventListener('push', event => {
     for(const client of await self.clients.matchAll({type:'window',includeUncontrolled:true}))client.postMessage({type:'parallel-reply'});
   })());
 });
+let notificationNavigation=Promise.resolve();
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
   const url=new URL('./',self.registration.scope);
   const cid=event.notification.data?.conversationId;
   if(typeof cid==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(cid))url.searchParams.set('conversation',cid);
-  event.waitUntil((async()=>{
+  notificationNavigation=notificationNavigation.catch(()=>{}).then(async()=>{
     for(const client of await self.clients.matchAll({type:'window',includeUncontrolled:true})){
       if(new URL(client.url).origin===url.origin&&new URL(client.url).pathname.startsWith(new URL(self.registration.scope).pathname)){
-        await client.navigate(url.href);await client.focus();return;
+        client.postMessage({type:'parallel-open-conversation',conversationId:cid});
+        await client.focus();return;
       }
     }
     await self.clients.openWindow(url.href);
-  })());
+  });
+  event.waitUntil(notificationNavigation);
 });
